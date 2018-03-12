@@ -1,0 +1,64 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  labels:
+    stack: esgf
+    component: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      stack: esgf
+      component: postgres
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: cedadev/esgf-postgres:latest
+          ports:
+            - name: postgres
+              containerPort: 5432
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          env:
+            - name: DBSUPER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: database-password
+            - name: ESGCET_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: database-publisher-password
+            - name: ESGF_ROOTADMIN_EMAIL
+              value: CoG@my-node.esgf.org
+            - name: ESGF_ROOTADMIN_USERNAME
+              value: rootAdmin
+            - name: ESGF_ROOTADMIN_OPENID
+              value: https://my-node.esgf.org/esgf-idp/openid/rootAdmin
+            - name: ESGF_ROOTADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: rootadmin-password
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/pgsql/data
+      volumes:
+        - name: postgres-data
+          emptyDir: {}
+

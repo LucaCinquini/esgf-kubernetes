@@ -1,0 +1,3 @@
+database-password=changeit (echo -n "changeit" | base64)
+rootadmin-password=changeit
+database-publisher-password=changeit

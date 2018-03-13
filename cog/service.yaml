@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: esgf-cog
+  labels:
+    stack: esgf
+    component: cog
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8000
+  selector:
+    stack: esgf
+    component: cog

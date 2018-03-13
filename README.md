@@ -49,3 +49,13 @@ curl -v http://localhost:8080/esgf-idp/
 
 from outside:
 curl -v 'http://192.168.64.12:31137/esgf-idp/'
+
+# CoG
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+test:
+
+http://my-node.esgf.org:30906/projects/testproject/
+AFTER MAPPING MINIKUBE IP: 192.168.64.12 to 'my-node.esgf.org'
+

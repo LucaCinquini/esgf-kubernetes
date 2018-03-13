@@ -112,7 +112,11 @@ spec:
             - name: SCRIPT_NAME
               value: /esgf-slcs
             - name: DJANGO_ALLOWED_HOSTS
-              value: my-node.esgf.org
+              valueFrom:
+                configMapKeyRef:
+                  name: esgf-config
+                  key: esgf-hostname
+              
             - name: DJANGO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
@@ -156,12 +160,22 @@ spec:
             - name: DJANGO_SUPERUSER_USERNAME
               value: "rootAdmin"
             - name: DJANGO_SUPERUSER_EMAIL
-              value: CoG@my-node.esgf.org
+              valueFrom:
+                configMapKeyRef:
+                  name: esgf-config
+                  key: root-admin-email
             # Other SLCS-specific settings
+            # FIXME
             - name: ESGF_SLCS_URL
-              value: "https://my-node.esgf.org/esgf-slcs"
+              valueFrom: 
+                configMapKeyRef: 
+                  name: esgf-config
+                  key: slcs-url
             - name: ESGF_SLCS_BASIC_AUTH_REALM
-              value: my-node.esgf.org
+              valueFrom:
+                configMapKeyRef:
+                  name: esgf-config
+                  key: esgf-hostname
             - name: ONLINECA_CERT_SUBJECT_TEMPLATE
               value: /DC=esgf/CN=$$OPENID
             - name: ONLINECA_CERT_FILEPATH

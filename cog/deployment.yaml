@@ -81,7 +81,10 @@ spec:
           #  periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
-              value: my-node.esgf.org
+              valueFrom:
+                configMapKeyRef:
+                  name: esgf-config
+                  key: esgf-hostname
             - name: ESGF_DATABASE_HOST
               value: esgf-postgres
             - name: ESGF_DATABASE_PASSWORD

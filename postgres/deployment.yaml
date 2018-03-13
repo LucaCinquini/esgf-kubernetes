@@ -50,11 +50,17 @@ spec:
                   name: esgf-postgres-secrets
                   key: database-publisher-password
             - name: ESGF_ROOTADMIN_EMAIL
-              value: "CoG@my-node.esgf.org"
+              valueFrom:
+                configMapKeyRef:
+                  name: esgf-config
+                  key: root-admin-email
             - name: ESGF_ROOTADMIN_USERNAME
               value: rootAdmin
             - name: ESGF_ROOTADMIN_OPENID
-              value: https://my-node.esgf.org/esgf-idp/openid/rootAdmin
+              valueFrom:
+                configMapKeyRef:
+                  name: esgf-config
+                  key: root-admin-openid
             - name: ESGF_ROOTADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:

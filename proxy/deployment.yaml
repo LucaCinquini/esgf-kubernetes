@@ -46,7 +46,10 @@ spec:
 #            periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
-              value: my-node.esgf.org
+              valueFrom:
+                configMapKeyRef:
+                  name: esgf-config
+                  key: esgf-hostname
             - name: ESGF_SOLR_UPSTREAM
               value: "http://esgf-solr.default.svc.cluster.local:8983"
             - name: ESGF_INDEX_NODE_UPSTREAM
@@ -82,3 +85,6 @@ spec:
         - name: trust-bundle
           configMap:
             name: esgf-trust-bundle
+        - name: esgf-config
+          configMap:
+            name: esgf-config

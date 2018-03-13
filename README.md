@@ -13,9 +13,11 @@ psql -U dbsuper esgcet
 [no password necessary]
 
 
-# Certificates
+# Configmaps and Secrets
 kubectl create secret tls esgf-hostcert --cert=$ESGF_CONFIG/certificates/hostcert/hostcert.crt  --key=$ESGF_CONFIG/certificates/hostcert/hostcert.key
 kubectl create configmap esgf-trust-bundle --from-file=$ESGF_CONFIG/certificates/esg-trust-bundle.pem
+
+kubectl create configmap esgf-config --from-literal=esgf-hostname=$ESGF_HOSTNAME
 
 kubectl create secret tls esgf-slcs-ca --cert=$ESGF_CONFIG/certificates/slcsca/ca.crt  --key=$ESGF_CONFIG/certificates/slcsca/ca.key
 
@@ -102,3 +104,18 @@ kubectl create -f deployment.yaml
 kubectl create -f service.yaml
 
 https://my-node.esgf.org:30494/projects/testproject/
+- can login with login2/
+
+https://my-node.esgf.org:30494/solr/#/
+
+https://my-node.esgf.org:30494/esg-search/search (SLOW!!!)
+
+https://my-node.esgf.org:30494/esgf-idp/
+
+https://my-node.esgf.org:30494/esg-orp/home.htm
+
+https://my-node.esgf.org:30494/thredds/catalog/catalog.html
+
+https://my-node.esgf.org:30494/esgf-auth/home/
+
+https://my-node.esgf.org:30494/esgf-slcs/admin/login/?next=/esgf-slcs/admin/

@@ -95,3 +95,10 @@ kubectl create -f deployment.yaml
 kubectl create -f service.yaml
 
 URL: http://my-node.esgf.org:31822/esgf-auth/home/
+
+# PROXY
+
+kubectl create -f deployment.yaml 
+kubectl create -f service.yaml
+
+https://my-node.esgf.org:30494/projects/testproject/

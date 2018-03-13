@@ -1,0 +1,76 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-orp
+  labels:
+    stack: esgf
+    component: orp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      stack: esgf
+      component: orp
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: orp
+      #annotations:
+      #  checksum/hostcert: {{ include (print $.Template.BasePath "/certificates/hostcert-secret.yaml") . | sha256sum }}
+      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: orp
+          image: cedadev/esgf-orp:latest
+          #imagePullPolicy: {{ default "" .Values.orp.imagePullPolicy | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+          # The readiness and liveness probes run the same thing, but the liveness
+          # probe just waits a while before kicking in whereas the readiness probe
+          # starts straight away
+          #readinessProbe:
+          #  httpGet: &probe
+          #    path: /esg-orp/home.htm
+          #    port: 8080
+              # This endpoint requires HTTPS, so simulate it
+          #    httpHeaders:
+          #      - name: Host
+          #        value: "{{ .Values.hostname }}"
+          #      - name: X-Forwarded-Proto
+          #        value: https
+          #  initialDelaySeconds: 10
+          #  periodSeconds: 10
+          #livenessProbe:
+          #  httpGet: *probe
+          #  initialDelaySeconds: 60
+          #  periodSeconds: 10
+          env:
+            - name: ESGF_HOSTNAME
+              value: my-node.esgf.org
+            - name: ESGF_DATABASE_HOST
+              value: esgf-postgres
+            - name: ESGF_SAML_CERT_FILE
+              value: /esg/certificates/hostcert/hostcert.crt
+            - name: ESGF_SAML_KEY_FILE
+              value: /esg/certificates/hostcert/hostcert.key
+          volumeMounts:
+            - mountPath: /esg/certificates/hostcert/hostcert.crt
+              name: hostcert
+              subPath: tls.crt
+            - mountPath: /esg/certificates/hostcert/hostcert.key
+              name: hostcert
+              subPath: tls.key
+            - mountPath: /esg/certificates/esg-trust-bundle.pem
+              name: trust-bundle
+              subPath: esg-trust-bundle.pem
+          #resources:
+#{{ toYaml .Values.orp.resources | indent 12 }}
+      volumes:
+        - name: hostcert
+          secret:
+            secretName: esgf-hostcert
+        - name: trust-bundle
+          configMap:
+            name: esgf-trust-bundle

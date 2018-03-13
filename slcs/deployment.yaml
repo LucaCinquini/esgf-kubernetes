@@ -1,0 +1,195 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-slcs
+  labels:
+    stack: esgf
+    component: slcs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      stack: esgf
+      component: slcs
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: slcs
+      #annotations:
+      #  checksum/postgres-secrets: {{ include (print $.Template.BasePath "/postgres/secret.yaml") . | sha256sum }}
+      #  checksum/slcs-secrets: {{ include (print $.Template.BasePath "/slcs/secret.yaml") . | sha256sum }}
+      #  checksum/slcs-ca: {{ include (print $.Template.BasePath "/slcs/secret-slcs-ca.yaml") . | sha256sum }}
+      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
+    spec:
+      initContainers:
+        # Wait for both postgres databases to become available before starting
+        - name: ensure-slcs-postgres
+          image: postgres
+          env:
+            - name: PGHOST
+              value: esgf-slcs-postgres
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              value: slcsuser
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-slcs-secrets
+                  key: "slcs-database-password"
+            - name: PGDATABASE
+              value: slcs
+          command:
+            # Try every 5 seconds for no longer than 10 mins
+            - bash
+            - -c
+            - |
+              for i in $(seq 120); do
+                sleep 5
+                echo "Attempt $i of 120"
+                if pg_isready; then exit 0; fi
+              done
+              exit 1
+        - name: ensure-postgres
+          image: postgres
+          env:
+            - name: PGHOST
+              value: esgf-postgres
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              value: dbsuper
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-secrets
+                  key: database-password
+            - name: PGDATABASE
+              value: esgcet
+          command:
+            # Try every 5 seconds for no longer than 10 mins
+            - bash
+            - -c
+            - |
+              for i in $(seq 120); do
+                sleep 5
+                echo "Attempt $i of 120"
+                if pg_isready; then exit 0; fi
+              done
+              exit 1
+      containers:
+        - name: slcs
+          image: cedadev/esgf-slcs:latest
+          #imagePullPolicy: {{ default "" .Values.slcs.imagePullPolicy | quote }}
+          ports:
+            - name: http
+              containerPort: 8000
+          # The readiness and liveness probes run the same thing, but the liveness
+          # probe just waits a while before kicking in whereas the readiness probe
+          # starts straight away
+          #readinessProbe:
+          #  httpGet: &probe
+          #    path: /esgf-slcs
+          #    port: 8000
+              # The ALLOWED_HOSTS setting means that the app will only accept
+              # requests from the correct host
+          #    httpHeaders:
+          #      - name: Host
+          #        value: "{{ .Values.hostname }}"
+          #      - name: X-Forwarded-Host
+          #        value: "{{ .Values.hostname }}"
+          #      - name: X-Forwarded-Proto
+          #        value: https
+          #  initialDelaySeconds: 10
+          #  periodSeconds: 10
+          #livenessProbe:
+          #  httpGet: *probe
+          #  initialDelaySeconds: 60
+          #  periodSeconds: 10
+          env:
+            # Generic Django settings
+            - name: SCRIPT_NAME
+              value: /esgf-slcs
+            - name: DJANGO_ALLOWED_HOSTS
+              value: my-node.esgf.org
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-slcs-secrets
+                  key: "slcs-secret-key"
+            # SLCS database
+            - name: DJANGO_DATABASE_DEFAULT_ENGINE
+              value: django.db.backends.postgresql
+            - name: DJANGO_DATABASE_DEFAULT_NAME
+              value: slcs
+            - name: DJANGO_DATABASE_DEFAULT_HOST
+              value: esgf-slcs-postgres
+            - name: DJANGO_DATABASE_DEFAULT_PORT
+              value: "5432"
+            - name: DJANGO_DATABASE_DEFAULT_USER
+              value: slcsuser
+            - name: DJANGO_DATABASE_DEFAULT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-slcs-secrets
+                  key: "slcs-database-password"
+            # ESGF User database
+            - name: DJANGO_DATABASE_USERDB_ENGINE
+              value: django.db.backends.postgresql
+            - name: DJANGO_DATABASE_USERDB_NAME
+              value: esgcet
+            - name: DJANGO_DATABASE_USERDB_HOST
+              value: esgcet-postgres
+            - name: DJANGO_DATABASE_USERDB_PORT
+              value: "5432"
+            - name: DJANGO_DATABASE_USERDB_USER
+              value: dbsuper
+            - name: DJANGO_DATABASE_USERDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-secrets
+                  key: "database-password"
+            # Make the rootAdmin account a superuser
+            - name: DJANGO_CREATE_SUPERUSER
+              value: "1"
+            - name: DJANGO_SUPERUSER_USERNAME
+              value: "rootAdmin"
+            - name: DJANGO_SUPERUSER_EMAIL
+              value: CoG@my-node.esgf.org
+            # Other SLCS-specific settings
+            - name: ESGF_SLCS_URL
+              value: "https://my-node.esgf.org/esgf-slcs"
+            - name: ESGF_SLCS_BASIC_AUTH_REALM
+              value: my-node.esgf.org
+            - name: ONLINECA_CERT_SUBJECT_TEMPLATE
+              value: /DC=esgf/CN=$$OPENID
+            - name: ONLINECA_CERT_FILEPATH
+              value: /esg/certificates/slcsca/ca.crt
+            - name: ONLINECA_KEY_FILEPATH
+              value: /esg/certificates/slcsca/ca.key
+            - name: ONLINECA_TRUSTROOTS_DIR
+              value: /esg/certificates/slcsca/trustroots
+          volumeMounts:
+            - mountPath: /esg/certificates/slcsca/ca.crt
+              name: slcsca
+              subPath: tls.crt
+            - mountPath: /esg/certificates/slcsca/ca.key
+              name: slcsca
+              subPath: tls.key
+            - mountPath: /esg/certificates/slcsca-trustroots
+              name: trustroots
+            - mountPath: /esg/certificates/esg-trust-bundle.pem
+              name: trust-bundle
+              subPath: esg-trust-bundle.pem
+          #resources:
+#{{ toYaml .Values.slcs.resources | indent 12 }}
+      volumes:
+        - name: slcsca
+          secret:
+            secretName: esgf-slcs-ca
+        - name: trustroots
+          emptyDir: {}
+        - name: trust-bundle
+          configMap:
+            name: esgf-trust-bundle

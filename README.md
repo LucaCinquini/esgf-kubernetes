@@ -17,6 +17,8 @@ psql -U dbsuper esgcet
 kubectl create secret tls esgf-hostcert --cert=$ESGF_CONFIG/certificates/hostcert/hostcert.crt  --key=$ESGF_CONFIG/certificates/hostcert/hostcert.key
 kubectl create configmap esgf-trust-bundle --from-file=$ESGF_CONFIG/certificates/esg-trust-bundle.pem
 
+kubectl create secret tls esgf-slcs-ca --cert=$ESGF_CONFIG/certificates/slcsca/ca.crt  --key=$ESGF_CONFIG/certificates/slcsca/ca.key
+
 # Zookeeper
 kubectl create -f deployment.yaml
 kubectl create -f service.yaml
@@ -69,3 +71,27 @@ kubectl create -f service.yaml
 test: http://my-node.esgf.org:31463/thredds/catalog/esgcet/catalog.html
 AFTER MAPPING MINIKUBE IP: 192.168.64.12 to 'my-node.esgf.org'
 
+# ORP
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+# SLCS
+
+kubectl create -f secret.yaml
+kubectl create -f deployment-postgres.yaml
+kubectl create -f service-postgres.yaml 
+kubectl create -f deployment.yaml 
+kubectl create -f service.yaml
+
+test URL: http://my-node.esgf.org:30155/esgf-slcs/admin/login/?next=/esgf-slcs/admin/
+CANNOT AUTHENTICATE TO SLCS
+
+# AUTH
+
+kubectl create -f secret.yaml 
+kubectl create -f deployment-postgres.yaml
+kubectl create -f service-postgres.yaml
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+URL: http://my-node.esgf.org:31822/esgf-auth/home/

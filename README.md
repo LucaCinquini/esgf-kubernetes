@@ -14,7 +14,7 @@ psql -U dbsuper esgcet
 
 # Certificates
 kubectl create secret tls hostcert-secret --cert=$ESGF_CONFIG/certificates/hostcert/hostcert.crt  --key=$ESGF_CONFIG/certificates/hostcert/hostcert.key
-kubectl create configmap trust-bundle-config --from-file=$ESGF_CONFIG/certificates/esg-trust-bundle.pem
+kubectl create configmap esgf-trust-bundle --from-file=$ESGF_CONFIG/certificates/esg-trust-bundle.pem
 
 # Zookeeper
 kubectl create -f deployment.yaml
@@ -26,3 +26,16 @@ kubectl create -f deployment.yaml
 kubectl create -f service.yaml
 
 curl -v http://localhost:8983/solr/#/datasets
+
+# Index Node
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+from within container:
+curl -v 'http://localhost:8080/esg-search/search'
+
+from outside:
+http://192.168.64.12:32374/esg-search/search
+
+BUT REALLY SLOW!!!! WHILE SOLR IS FAST....
+

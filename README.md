@@ -39,3 +39,13 @@ http://192.168.64.12:32374/esg-search/search
 
 BUT REALLY SLOW!!!! WHILE SOLR IS FAST....
 
+# IdP Node
+
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+from within the container:
+curl -v http://localhost:8080/esgf-idp/
+
+from outside:
+curl -v 'http://192.168.64.12:31137/esgf-idp/'

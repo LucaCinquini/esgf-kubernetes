@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: idp-node-deployment
+  name: esgf-idp-node
   labels:
     stack: esgf
     component: idp-node
@@ -16,29 +16,82 @@ spec:
       labels:
         stack: esgf
         component: idp-node
+      #annotations:
+      #  checksum/postgres-secrets: {{ include (print $.Template.BasePath "/postgres/secret.yaml") . | sha256sum }}
+      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
     spec:
+      initContainers:
+        # Wait for postgres to become available before starting
+        - name: ensure-postgres
+          image: postgres
+          env:
+            - name: PGHOST
+              value: esgf-postgres
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              value: dbsuper
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-secrets
+                  key: database-password
+            - name: PGDATABASE
+              value: esgcet
+          command:
+            # Try every 5 seconds for no longer than 10 mins
+            - bash
+            - -c
+            - |
+              for i in $(seq 120); do
+                sleep 5
+                echo "Attempt $i of 120"
+                if pg_isready; then exit 0; fi
+              done
+              exit 1
       containers:
         - name: idp-node
           image: cedadev/esgf-idp-node:latest
+          #imagePullPolicy: {{ default "" .Values.idpNode.imagePullPolicy | quote }}
           ports:
             - name: http
               containerPort: 8080
+          # The readiness and liveness probes run the same thing, but the liveness
+          # probe just waits a while before kicking in whereas the readiness probe
+          # starts straight away
+          #readinessProbe:
+          #  httpGet: &probe
+          #    path: /esgf-idp/
+          #    port: 8080
+              # This endpoint requires HTTPS, so simulate it
+          #    httpHeaders:
+          #      - name: Host
+          #        value: "{{ .Values.hostname }}"
+          #      - name: X-Forwarded-Proto
+          #        value: https
+          #  initialDelaySeconds: 10
+          #  periodSeconds: 10
+          #livenessProbe:
+          #  httpGet: *probe
+          #  initialDelaySeconds: 60
+          #  periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               value: my-node.esgf.org
             - name: ESGF_DATABASE_HOST
-              value: postgres-service
+              value: esgf-postgres
             - name: ESGF_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secrets
+                  name: esgf-postgres-secrets
                   key: database-password
           volumeMounts:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-          resources:
+          #resources:
+#{{ toYaml .Values.idpNode.resources | indent 12 }}
       volumes:
         - name: trust-bundle
           configMap:
-            name: trust-bundle-config
+            name: esgf-trust-bundle

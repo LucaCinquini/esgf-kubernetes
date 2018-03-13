@@ -1,0 +1,75 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-tds
+  labels:
+    stack: esgf
+    component: tds
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      stack: esgf
+      component: tds
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: tds
+      #annotations:
+      #  checksum/tds-secrets: {{ include (print $.Template.BasePath "/tds/secret.yaml") . | sha256sum }}
+      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: tds
+          image: cedadev/esgf-tds:latest
+          #imagePullPolicy: {{ default "" .Values.tds.imagePullPolicy | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+          # The readiness and liveness probes run the same thing, but the liveness
+          # probe just waits a while before kicking in whereas the readiness probe
+          # starts straight away
+#          readinessProbe:
+#            httpGet: &probe
+#              path: /thredds
+#              port: 8080
+#            initialDelaySeconds: 10
+#            periodSeconds: 10
+#          livenessProbe:
+#            httpGet: *probe
+#            initialDelaySeconds: 60
+#            periodSeconds: 10
+          env:
+            - name: ESGF_HOSTNAME
+              value: my-node.esgf.org
+            - name: ESGF_DATABASE_HOST
+              value: esgf-postgres
+            - name: ESGF_COOKIE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-tds-secrets
+                  key: "shared-cookie-secret-key"
+            - name: ESGF_TDS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-tds-secrets
+                  key: "rootadmin-password"
+          volumeMounts:
+            - mountPath: /esg/content/thredds/esgcet
+              name: tds-content
+            - mountPath: /esg/data
+              name: tds-data
+            - mountPath: /esg/certificates/esg-trust-bundle.pem
+              name: trust-bundle
+              subPath: esg-trust-bundle.pem
+          #resources:
+#{{ toYaml .Values.tds.resources | indent 12 }}
+      volumes:
+        - name: tds-content
+          emptyDir: {}
+        - name: tds-data
+          emptyDir: {}
+        - name: trust-bundle
+          configMap:
+            name: esgf-trust-bundle

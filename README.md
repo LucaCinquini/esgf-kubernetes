@@ -3,6 +3,7 @@
 cd postgres
 kubectl create -f secret.yaml 
 kubectl create -f deployment.yaml
+kubectl create -f service.yaml
 
 to connect to the postgres from inside its container:
 
@@ -57,5 +58,14 @@ kubectl create -f service.yaml
 test:
 
 http://my-node.esgf.org:30906/projects/testproject/
+AFTER MAPPING MINIKUBE IP: 192.168.64.12 to 'my-node.esgf.org'
+
+# TDS
+
+kubectl create -f secret.yaml 
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+test: http://my-node.esgf.org:31463/thredds/catalog/esgcet/catalog.html
 AFTER MAPPING MINIKUBE IP: 192.168.64.12 to 'my-node.esgf.org'
 

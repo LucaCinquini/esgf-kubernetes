@@ -1,0 +1,15 @@
+# Load-balanced service for Zookeeper clients
+apiVersion: v1
+kind: Service
+metadata:
+  name: esgf-zookeeper
+  labels:
+    stack: esgf
+    component: zookeeper
+spec:
+  ports:
+    - name: client
+      port: 2181
+  selector:
+    stack: esgf
+    component: zookeeper

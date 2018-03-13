@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-solr
+  labels:
+    stack: esgf
+    component: solr
+spec:
+  replicas: 1
+  # Select pods on release and component only, rather than all labels
+  # This means that the selector will match all pods from all versions of the chart when upgrading
+  selector:
+    matchLabels:
+      stack: esgf
+      component: solr
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: solr
+    spec:
+      containers:
+        - name: solr
+          image: cedadev/esgf-solr:latest
+          #imagePullPolicy: {{ default "" .Values.solr.imagePullPolicy | quote }}
+          ports:
+            - name: solr
+              containerPort: 8983
+          #livenessProbe:
+          #  initialDelaySeconds: 10
+          #  periodSeconds: 10
+          #  tcpSocket:
+          #    port: 8983
+          env:
+            - name: SOLR_HOME
+              value: /esg/solr-home
+            - name: SOLR_HEAP
+              value: 1g
+            - name: ZOOKEEPER_HOST
+              value: "esgf-zookeeper"
+          args:
+            - "solr-foreground"
+            - "-c"
+            - "-p"
+            - "8983"
+            - "-z"
+            - "esgf-zookeeper:2181"
+            - "-s"
+            - "/esg/solr-home"
+          volumeMounts:
+            - name: solr-home
+              mountPath: /esg/solr-home
+          #resources:
+#{{ toYaml .Values.resources | indent 12 }}
+      volumes:
+        - name: solr-home
+          emptyDir: {}

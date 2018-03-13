@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: esgf-solr
+  labels:
+    stack: esgf
+    component: solr
+spec:
+  type: NodePort
+  ports:
+    - name: solr
+      port: 8983
+  selector:
+    stack: esgf
+    component: solr

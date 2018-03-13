@@ -15,3 +15,14 @@ psql -U dbsuper esgcet
 # Certificates
 kubectl create secret tls hostcert-secret --cert=$ESGF_CONFIG/certificates/hostcert/hostcert.crt  --key=$ESGF_CONFIG/certificates/hostcert/hostcert.key
 kubectl create configmap trust-bundle-config --from-file=$ESGF_CONFIG/certificates/esg-trust-bundle.pem
+
+# Zookeeper
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+
+# Solr
+kubectl create -f deployment.yaml
+kubectl create -f service.yaml
+
+curl -v http://localhost:8983/solr/#/datasets

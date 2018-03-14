@@ -144,7 +144,7 @@ spec:
             - name: DJANGO_DATABASE_USERDB_NAME
               value: esgcet
             - name: DJANGO_DATABASE_USERDB_HOST
-              value: esgcet-postgres
+              value: esgf-postgres
             - name: DJANGO_DATABASE_USERDB_PORT
               value: "5432"
             - name: DJANGO_DATABASE_USERDB_USER

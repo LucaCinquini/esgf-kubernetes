@@ -30,6 +30,18 @@ spec:
         backend:
           serviceName: esgf-index-node
           servicePort: 8080
+      - path: /esg-orp
+        backend:
+          serviceName: esgf-orp
+          servicePort: 8080
+      - path: /esgf-auth
+        backend:
+          serviceName: esgf-auth
+          servicePort: 8000
+      - path: /esgf-slcs
+        backend:
+          serviceName: esgf-slcs
+          servicePort: 8000
       - path: /
         backend:
           serviceName: esgf-cog

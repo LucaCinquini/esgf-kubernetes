@@ -1,5 +1,9 @@
 WORKFLOW
 
+0) start minikube with plenty of memory
+
+minikube start --vm-driver=xhyve --memory=4096
+
 0) enable Ingress controller
 
 on minikube: minikube addons enable ingress
@@ -29,8 +33,33 @@ cd ~/eclipse-workspace/esgf-kubernetes
 
 ./scripts/deploy.sh
 
+4) testing
 
-4) clean up:
+o CoG: https://esgf.192.168.64.12.xip.io/
+- login with https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin
+  password from: $ESGF_CONFIG/secrets/rootadmin-password
+  
+o Solr: https://esgf.192.168.64.12.xip.io/solr/#/
+
+o ESGF Search: https://esgf.192.168.64.12.xip.io/esg-search/search
+
+o IdP: https://esgf.192.168.64.12.xip.io/esgf-idp/
+
+o TDS: https://esgf.192.168.64.12.xip.io/thredds/
+
+o ORP: https://esgf.192.168.64.12.xip.io/esg-orp/
+- login with https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin
+  password from: $ESGF_CONFIG/secrets/rootadmin-password
+  
+o ESGF-AUTH: https://esgf.192.168.64.12.xip.io/esgf-auth/home/
+
+o SLCS: https://esgf.192.168.64.12.xip.io/esgf-slcs/admin/login/
+
+
+
+o SLCS
+
+5) clean up:
 
 kubectl delete deployment,svc,statefulset -l stack=esgf
 

@@ -1,8 +1,8 @@
 #!/bin/sh
 # Script to create all Kubernetes deployments, services, statefulsets, ingress
 
-#kubectl create -f postgres/deployment.yaml
-#kubectl create -f postgres/service.yaml
+kubectl create -f postgres/deployment.yaml
+kubectl create -f postgres/service.yaml
 
 sleep 5
 kubectl create -f zookeeper/statefulset.yaml

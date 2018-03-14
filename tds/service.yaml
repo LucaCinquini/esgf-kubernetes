@@ -6,7 +6,7 @@ metadata:
     stack: esgf
     component: tds
 spec:
-  type: NodePort
+  #type: NodePort
   ports:
     - name: http
       port: 8080

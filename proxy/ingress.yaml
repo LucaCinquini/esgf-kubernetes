@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    ingress.kubernetes.io/ssl-redirect: "false"
+  name: esgf-ingress
+spec:
+  tls:
+  - hosts:
+    - my-node.esgf.org
+    secretName: esgf-hostcert
+  rules:
+  - host: my-node.esgf.org
+    http:
+      paths:
+      - path: /thredds
+        backend:
+          serviceName: esgf-tds
+          servicePort: 8080
+      - path: /esgf-idp
+        backend:
+          serviceName: esgf-idp-node
+          servicePort: 8080
+      - path: /solr
+        backend:
+          serviceName: esgf-solr
+          servicePort: 8983
+      - path: /esg-search
+        backend:
+          serviceName: esgf-index-node
+          servicePort: 8080
+      - path: /
+        backend:
+          serviceName: esgf-cog
+          servicePort: 8000

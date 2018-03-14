@@ -7,11 +7,11 @@ metadata:
   name: esgf-ingress
 spec:
   tls:
-  - hosts:
-    - my-node.esgf.org
+  - hosts: 
+    - esgf.192.168.64.12.xip.io
     secretName: esgf-hostcert
   rules:
-  - host: my-node.esgf.org
+  - host: esgf.192.168.64.12.xip.io
     http:
       paths:
       - path: /thredds

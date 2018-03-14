@@ -1,13 +1,42 @@
 WORKFLOW
 
+0) enable Ingress controller
+
+on minikube: minikube addons enable ingress
+
 0) Def env variables
+
+export ESGF_HOSTNAME="esgf.$(minikube ip).xip.io"
+export ESGF_CONFIG=/Users/cinquini/data/ESGF_CONFIG_CEDA
+
+NOTE: must use an IP that is resolvable inside each k8s pod, simply mapping the minikube IP to a chosen hostname won't work for OpenID authentication
 
 1) Create site configuration, certificates with esgf-setup container
 
+cd ~/eclipse-workspace/esgf-docker-ceda
+docker-compose run esgf-setup generate-secrets
+docker-compose run esgf-setup generate-test-certificates
+docker-compose run esgf-setup create-trust-bundle
+
+
 2) Run script to create k8s configmaps and secrets
 
-3) kubectl create -f.... to start all deployments, services
+cd ~/eclipse-workspace/esgf-kubernetes
+./scripts/setup.sh 
 
+
+3) run script to start all k8s pods and services:
+
+./scripts/deploy.sh
+
+
+4) clean up:
+
+kubectl delete deployment,svc,statefulset -l stack=esgf
+
+kubectl delete secrets esgf-auth-secrets esgf-cog-secrets esgf-hostcert esgf-postgres-secrets esgf-slcs-ca esgf-tds-secrets esgf-slcs-secrets
+
+kubectl delete configmap esgf-config esgf-trust-bundle
 
 ============
 

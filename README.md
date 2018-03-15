@@ -97,6 +97,7 @@ Test basic functionality of the ESGF services. In the URLs below, replace the no
 
 * SLCS: https://esgf.192.168.64.12.xip.io/esgf-slcs/admin/login/ . Login with:
   * username: rootAdmin
+  * password from: cat $ESGF_CONFIG/secrets/rootadmin-password
 
 ### Cleanup
 
@@ -111,6 +112,8 @@ To completely delete all ESGF Kubernetes objects, run the following script:
 ```
 ./scripts/cleanup.sh
 ```
+
+and then stop minikube.
 
 ### Other Notes
 

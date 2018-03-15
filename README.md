@@ -11,8 +11,9 @@ for the specific case of a Mac OSX laptop.
 
 The following packages must be installed on your system:
 
-* minikube
 * kubectl
+* minikube
+* xhyve VM driver
 
 ### Setup
 
@@ -22,23 +23,32 @@ Start minikube with enough memory:
 minikube start --vm-driver=xhyve --memory=4096
 ```
 
-0) enable Ingress controller
+Enable the Ingress controller:
 
-on minikube: minikube addons enable ingress
+```
+minikube addons enable ingress
+```
 
-0) Def env variables
+Define environment variables for the node hostname, and an empty directory that will contain the node specific configuration and secrets:
 
+```
 export ESGF_HOSTNAME="esgf.$(minikube ip).xip.io"
 export ESGF_CONFIG=/Users/cinquini/data/ESGF_CONFIG_CEDA
+```
 
-NOTE: must use an IP that is resolvable inside each k8s pod, simply mapping the minikube IP to a chosen hostname won't work for OpenID authentication
+Note: for OpenID authentication to work, the node hostname must be resolvable inside each Kubernetes Pod. Simply choosing a hostname and mapping it to the minikube node IP in `/etc/hosts` won't work...
 
-1) Create site configuration, certificates with esgf-setup container
+Create the site configuration and certificates using the helper container that is part of the `esgf-docker` distribution. The resulting files
+(passwords and certificates) will be located under $ESGF_CONFIG:
 
-cd ~/eclipse-workspace/esgf-docker-ceda
+```
+cd <any directory>
+git clone https://github.com/cedadev/esgf-helm.git
+cd esgf-helm
 docker-compose run esgf-setup generate-secrets
 docker-compose run esgf-setup generate-test-certificates
 docker-compose run esgf-setup create-trust-bundle
+```
 
 
 2) Run script to create k8s configmaps and secrets

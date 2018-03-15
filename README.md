@@ -58,13 +58,13 @@ Run the following script to create Kubernetes ConfigMap and Secret objects that 
 cd <any directory>
 git clone https://github.com/LucaCinquini/esgf-kubernetes.git
 cd esgf-kubernetes
-./scripts/setup.sh 
+./SCRIPTS/setup.sh 
 ```
 
 Run the follwing script to create Kubernetes Deployment and Service objects. The created Pods will host the ESGF/Docker containers.
 
 ```
-./scripts/deploy.sh
+./SCRIPTS/deploy.sh
 ```
 
 Wait untill all Pods are running in a stable state:
@@ -110,7 +110,7 @@ minikube stop
 To completely delete all ESGF Kubernetes objects, run the following script:
 
 ```
-./scripts/cleanup.sh
+./SCRIPTS/cleanup.sh
 ```
 
 and then stop minikube.

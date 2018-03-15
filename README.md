@@ -1,8 +1,26 @@
-WORKFLOW
+# esgf-kubernetes
 
-0) start minikube with plenty of memory
+This repository contains configuration files for deploying the ESGF/Docker software stack on a Kubernetes cluster.
 
+## Quick Start
+
+The following instructions describe how to deploy ESGF/Docker on a single-node minikube cluster,
+for the specific case of a Mac OSX laptop.
+
+### Pre-requisites
+
+The following packages must be installed on your system:
+
+* minikube
+* kubectl
+
+### Setup
+
+Start minikube with enough memory:
+
+```
 minikube start --vm-driver=xhyve --memory=4096
+```
 
 0) enable Ingress controller
 

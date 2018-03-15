@@ -23,7 +23,7 @@ Start minikube with enough memory:
 minikube start --vm-driver=xhyve --memory=4096
 ```
 
-Enable the Ingress controller:
+Enable the Kubernetes Ingress controller:
 
 ```
 minikube addons enable ingress
@@ -50,18 +50,30 @@ docker-compose run esgf-setup generate-test-certificates
 docker-compose run esgf-setup create-trust-bundle
 ```
 
+### Deploy the ESGF stack
 
-2) Run script to create k8s configmaps and secrets
+Run the following script to create Kubernetes ConfigMap and Secret objects that contain the certificates and passwords from the $ESGF_CONFIG directory:
 
-cd ~/eclipse-workspace/esgf-kubernetes
+```
+cd <any directory>
+git clone https://github.com/LucaCinquini/esgf-kubernetes.git
+cd esgf-kubernetes
 ./scripts/setup.sh 
+```
 
+Run the follwing script to create Kubernetes Deployment and Service objects. The created Pods will host the ESGF/Docker containers.
 
-3) run script to start all k8s pods and services:
-
+```
 ./scripts/deploy.sh
+```
 
-4) testing
+Wait untill all Pods are running in a stable state:
+
+```
+kubectl get pods -l stack=esgf
+```
+
+## Testing
 
 o CoG: https://esgf.192.168.64.12.xip.io/
 - login with https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin

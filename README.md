@@ -50,7 +50,7 @@ docker-compose run esgf-setup generate-test-certificates
 docker-compose run esgf-setup create-trust-bundle
 ```
 
-### Deploymenyt
+### Deployment
 
 Run the following script to create Kubernetes ConfigMap and Secret objects that contain the certificates and passwords from the $ESGF_CONFIG directory:
 
@@ -77,171 +77,48 @@ kubectl get pods -l stack=esgf
 
 Test basic functionality of the ESGF services. In the URLs below, replace the node hostname with your specific value for $ESGF_HOSTNAME.
 
-* CoG: https://esgf.192.168.64.12.xip.io/
-  Login with:
+* CoG: https://esgf.192.168.64.12.xip.io/ . Login with:
   * openid: https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin
   * password from: cat $ESGF_CONFIG/secrets/rootadmin-password
   
-o Solr: https://esgf.192.168.64.12.xip.io/solr/#/
+* Solr: https://esgf.192.168.64.12.xip.io/solr/#/
 
-o ESGF Search: https://esgf.192.168.64.12.xip.io/esg-search/search
+* ESGF Search: https://esgf.192.168.64.12.xip.io/esg-search/search . Note: at this time, this URL os very slow...
 
-o IdP: https://esgf.192.168.64.12.xip.io/esgf-idp/
+* ESGF IdP: https://esgf.192.168.64.12.xip.io/esgf-idp/
 
-o TDS: https://esgf.192.168.64.12.xip.io/thredds/
+* ESGF TDS: https://esgf.192.168.64.12.xip.io/thredds/
 
-o ORP: https://esgf.192.168.64.12.xip.io/esg-orp/
-- login with https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin
-  password from: $ESGF_CONFIG/secrets/rootadmin-password
+* ESGF ORP: https://esgf.192.168.64.12.xip.io/esg-orp/ . Login with:
+  * openid: https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin
+  * password from: cat $ESGF_CONFIG/secrets/rootadmin-password
   
-o ESGF-AUTH: https://esgf.192.168.64.12.xip.io/esgf-auth/home/
+* ESGF-AUTH: https://esgf.192.168.64.12.xip.io/esgf-auth/home/
 
-o SLCS: https://esgf.192.168.64.12.xip.io/esgf-slcs/admin/login/
+* SLCS: https://esgf.192.168.64.12.xip.io/esgf-slcs/admin/login/ . Login with:
+  * username: rootAdmin
 
+### Cleanup
 
+To simply stop the Kubernetes cluster (all Pods will be restarted when the cluster is restarted):
 
-o SLCS
+```
+minikube stop
+```
 
-5) clean up:
+To completely delete all ESGF Kubernetes objects, run the following script:
 
-kubectl delete deployment,svc,statefulset -l stack=esgf
+```
+./scripts/cleanup.sh
+```
 
-kubectl delete secrets esgf-auth-secrets esgf-cog-secrets esgf-hostcert esgf-postgres-secrets esgf-slcs-ca esgf-tds-secrets esgf-slcs-secrets
+### Other Notes
 
-kubectl delete configmap esgf-config esgf-trust-bundle
+* To connect to the postgres databse from inside its container:
 
-============
-
-
-# Postgres
-
-cd postgres
-kubectl create -f secret.yaml 
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-to connect to the postgres from inside its container:
-
-kubectl get pods
-kubectl exec -it postgres-deployment-f9d9848f5-hqbp2 -- /bin/bash
-psql -U dbsuper esgcet
-[no password necessary]
-
-
-# Configmaps and Secrets
-kubectl create secret tls esgf-hostcert --cert=$ESGF_CONFIG/certificates/hostcert/hostcert.crt  --key=$ESGF_CONFIG/certificates/hostcert/hostcert.key
-kubectl create configmap esgf-trust-bundle --from-file=$ESGF_CONFIG/certificates/esg-trust-bundle.pem
-
-kubectl create configmap esgf-config --from-literal=esgf-hostname=$ESGF_HOSTNAME --from-literal=root-admin-email=CoG@$ESGF_HOSTNAME --from-literal=root-admin-openid=https://$ESGF_HOSTNAME/esgf-idp/openid/rootAdmin --from-literal=slcs-url=https://$ESGF_HOSTNAME/esgf-slcs
-
-kubectl create secret tls esgf-slcs-ca --cert=$ESGF_CONFIG/certificates/slcsca/ca.crt  --key=$ESGF_CONFIG/certificates/slcsca/ca.key
-
-# new
-kubectl create secret generic esgf-postgres-secrets --from-file=$ESGF_CONFIG/secrets/database-password --from-file=$ESGF_CONFIG/secrets/database-publisher-password --from-file=$ESGF_CONFIG/secrets/rootadmin-password
-
-kubectl create secret generic esgf-cog-secrets --from-file=$ESGF_CONFIG/secrets/rootadmin-password --from-file=$ESGF_CONFIG/secrets/cog-secret-key
-
-kubectl create secret generic esgf-auth-secrets --from-file=$ESGF_CONFIG/secrets/auth-database-password --from-file=$ESGF_CONFIG/secrets/auth-secret-key --from-file=$ESGF_CONFIG/secrets/shared-cookie-secret-key
-
-kubectl create secret generic esgf-slcs-secrets --from-file=$ESGF_CONFIG/secrets/slcs-database-password --from-file=$ESGF_CONFIG/secrets/slcs-secret-key
-
-kubectl create secret generic esgf-tds-secrets --from-file=$ESGF_CONFIG/secrets/shared-cookie-secret-key --from-file=$ESGF_CONFIG/secrets/rootadmin-password
-
-# Zookeeper
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-
-# Solr
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-curl -v http://localhost:8983/solr/#/datasets
-
-# Index Node
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-from within container:
-curl -v 'http://localhost:8080/esg-search/search'
-
-from outside:
-http://192.168.64.12:32374/esg-search/search
-
-BUT REALLY SLOW!!!! WHILE SOLR IS FAST....
-
-# IdP Node
-
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-from within the container:
-curl -v http://localhost:8080/esgf-idp/
-
-from outside:
-curl -v 'http://192.168.64.12:31137/esgf-idp/'
-
-# CoG
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-test:
-
-http://my-node.esgf.org:30906/projects/testproject/
-AFTER MAPPING MINIKUBE IP: 192.168.64.12 to 'my-node.esgf.org'
-
-# TDS
-
-kubectl create -f secret.yaml 
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-test: http://my-node.esgf.org:31463/thredds/catalog/esgcet/catalog.html
-AFTER MAPPING MINIKUBE IP: 192.168.64.12 to 'my-node.esgf.org'
-
-# ORP
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-# SLCS
-
-kubectl create -f secret.yaml
-kubectl create -f deployment-postgres.yaml
-kubectl create -f service-postgres.yaml 
-kubectl create -f deployment.yaml 
-kubectl create -f service.yaml
-
-test URL: http://my-node.esgf.org:30155/esgf-slcs/admin/login/?next=/esgf-slcs/admin/
-CANNOT AUTHENTICATE TO SLCS
-
-# AUTH
-
-kubectl create -f secret.yaml 
-kubectl create -f deployment-postgres.yaml
-kubectl create -f service-postgres.yaml
-kubectl create -f deployment.yaml
-kubectl create -f service.yaml
-
-URL: http://my-node.esgf.org:31822/esgf-auth/home/
-
-# PROXY
-
-kubectl create -f deployment.yaml 
-kubectl create -f service.yaml
-
-https://my-node.esgf.org:30494/projects/testproject/
-- can login with login2/
-
-https://my-node.esgf.org:30494/solr/#/
-
-https://my-node.esgf.org:30494/esg-search/search (SLOW!!!)
-
-https://my-node.esgf.org:30494/esgf-idp/
-
-https://my-node.esgf.org:30494/esg-orp/home.htm
-
-https://my-node.esgf.org:30494/thredds/catalog/catalog.html
-
-https://my-node.esgf.org:30494/esgf-auth/home/
-
-https://my-node.esgf.org:30494/esgf-slcs/admin/login/?next=/esgf-slcs/admin/
+  ```
+  kubectl get pods
+  kubectl exec -it <postgres pod id> -- /bin/bash
+  psql -U dbsuper esgcet
+  [no password necessary]
+  ```

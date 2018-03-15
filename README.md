@@ -50,7 +50,7 @@ docker-compose run esgf-setup generate-test-certificates
 docker-compose run esgf-setup create-trust-bundle
 ```
 
-### Deploy the ESGF stack
+### Deploymenyt
 
 Run the following script to create Kubernetes ConfigMap and Secret objects that contain the certificates and passwords from the $ESGF_CONFIG directory:
 
@@ -75,9 +75,12 @@ kubectl get pods -l stack=esgf
 
 ## Testing
 
-o CoG: https://esgf.192.168.64.12.xip.io/
-- login with https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin
-  password from: $ESGF_CONFIG/secrets/rootadmin-password
+Test basic functionality of the ESGF services. In the URLs below, replace the node hostname with your specific value for $ESGF_HOSTNAME.
+
+* CoG: https://esgf.192.168.64.12.xip.io/
+  Login with:
+  * openid: https://esgf.192.168.64.12.xip.io/esgf-idp/openid/rootAdmin
+  * password from: cat $ESGF_CONFIG/secrets/rootadmin-password
   
 o Solr: https://esgf.192.168.64.12.xip.io/solr/#/
 

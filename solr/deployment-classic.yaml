@@ -1,0 +1,128 @@
+# Headless service to make master available to slave for replication
+apiVersion: v1
+kind: Service
+metadata:
+  name: esgf-solr-master
+  labels:
+    stack: esgf
+    component: solr
+spec:
+  ports:
+    - name: master
+      port: 8984
+  clusterIP: None
+  selector:
+    stack: esgf
+    component: solr
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-solr
+  labels:
+    stack: esgf
+    component: solr
+spec:
+  replicas: 1
+  # Select pods on release and component only, rather than all labels
+  # This means that the selector will match all pods from all versions of the chart when upgrading
+  selector:
+    matchLabels:
+      stack: esgf
+      component: solr
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: solr
+    spec:
+      containers:
+      
+        - name: solr-slave
+          image: cedadev/esgf-solr:latest
+          #imagePullPolicy: {{ default "" .Values.solr.imagePullPolicy | quote }}
+          ports:
+            - name: solr
+              containerPort: 8983
+          livenessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            tcpSocket:
+              port: 8983
+          env:
+            - name: SOLR_HOME
+              value: /esg/solr-home
+            - name: SOLR_HEAP
+              value: 1g
+            - name: SOLR_SHARD
+              value: "slave"
+            - name: SOLR_PORT
+              value: "8983"  
+          args:
+            - "solr-foreground"
+            - "-p"
+            - "8983"
+            - "-s"
+            - "/esg/solr-home/slave-8983"
+          volumeMounts:
+            - name: solr-home-slave
+              mountPath: /esg/solr-home
+            - name: solr-index-slave
+              mountPath: /esg/solr-index
+            # FIXME
+            - name: solr-home-template
+              mountPath: /usr/local/src/solr-home
+            - name: docker-entrypoint
+              mountPath: /usr/local/bin/docker-entrypoint.sh
+              
+        - name: solr-master
+          image: cedadev/esgf-solr:latest
+          #imagePullPolicy: {{ default "" .Values.solr.imagePullPolicy | quote }}
+          ports:
+            - name: solr
+              containerPort: 8984
+          livenessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            tcpSocket:
+              port: 8983
+          env:
+            - name: SOLR_HOME
+              value: /esg/solr-home
+            - name: SOLR_HEAP
+              value: 1g
+            - name: SOLR_SHARD
+              value: "master"
+            - name: SOLR_PORT
+              value: "8984"  
+          args:
+            - "solr-foreground"
+            - "-p"
+            - "8984"
+            - "-s"
+            - "/esg/solr-home/master-8984"
+          volumeMounts:
+            - name: solr-home-master
+              mountPath: /esg/solr-home
+            - name: solr-index-master
+              mountPath: /esg/solr-index
+            # FIXME
+            - name: solr-home-template
+              mountPath: /usr/local/src/solr-home
+            - name: docker-entrypoint
+              mountPath: /usr/local/bin/docker-entrypoint.sh
+      volumes:
+        - name: solr-home-slave
+          emptyDir: {}
+        - name: solr-home-master
+          emptyDir: {}
+        - name: solr-index-slave
+          emptyDir: {}
+        - name: solr-index-master
+          emptyDir: {}
+        - name: solr-home-template
+          hostPath:
+            path: /Users/cinquini/eclipse-workspace/esgf-docker-ceda-luca/solr/config/solr-home
+        - name: docker-entrypoint
+          hostPath:
+            path: /Users/cinquini/eclipse-workspace/esgf-docker-ceda-luca/solr/docker-entrypoint-classic.sh

@@ -13,7 +13,8 @@ kubectl create -f cog/deployment.yaml
 kubectl create -f cog/service.yaml
 
 sleep 5
-kubectl create -f solr/deployment.yaml
+#kubectl create -f solr/deployment.yaml
+kubectl create -f solr/deployment-classic.yaml
 kubectl create -f solr/service.yaml
 
 sleep 5

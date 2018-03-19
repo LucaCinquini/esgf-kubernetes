@@ -74,9 +74,14 @@ spec:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
+            - name: create-indexes-script
+              mountPath: /tomcat-init.d/02-create-indices.sh
           #resources:
 #{{ toYaml .Values.indexNode.resources | indent 12 }}
       volumes:
         - name: trust-bundle
           configMap:
             name: esgf-trust-bundle
+        - name: create-indexes-script
+          hostPath:
+            path: /Users/cinquini/eclipse-workspace/esgf-docker-ceda-luca/index-node/scripts/create-indices.sh

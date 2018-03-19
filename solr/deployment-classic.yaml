@@ -120,6 +120,7 @@ spec:
           emptyDir: {}
         - name: solr-index-master
           emptyDir: {}
+        # FIXME
         - name: solr-home-template
           hostPath:
             path: /Users/cinquini/eclipse-workspace/esgf-docker-ceda-luca/solr/config/solr-home

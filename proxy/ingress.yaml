@@ -5,6 +5,9 @@ metadata:
     ingress.kubernetes.io/rewrite-target: /
     ingress.kubernetes.io/ssl-redirect: "false"
   name: esgf-ingress
+  labels:
+    stack: esgf
+    component: proxy
 spec:
   tls:
   - hosts: 

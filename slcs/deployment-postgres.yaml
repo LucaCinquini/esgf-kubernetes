@@ -46,8 +46,6 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
-          #resources:
-#{{ toYaml .Values.slcs.postgres.resources | indent 12 }}
       volumes:
         - name: postgres-data
           emptyDir: {}

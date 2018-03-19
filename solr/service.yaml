@@ -6,7 +6,6 @@ metadata:
     stack: esgf
     component: solr
 spec:
-  type: NodePort
   ports:
     - name: solr
       port: 8983

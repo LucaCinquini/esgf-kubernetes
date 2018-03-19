@@ -6,7 +6,6 @@ metadata:
     stack: esgf
     component: auth
 spec:
-  type: NodePort
   ports:
     - name: http
       port: 8000

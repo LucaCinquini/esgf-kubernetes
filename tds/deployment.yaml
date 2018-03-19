@@ -30,16 +30,16 @@ spec:
           # The readiness and liveness probes run the same thing, but the liveness
           # probe just waits a while before kicking in whereas the readiness probe
           # starts straight away
-#          readinessProbe:
-#            httpGet: &probe
-#              path: /thredds
-#              port: 8080
-#            initialDelaySeconds: 10
-#            periodSeconds: 10
-#          livenessProbe:
-#            httpGet: *probe
-#            initialDelaySeconds: 60
-#            periodSeconds: 10
+          readinessProbe:
+            httpGet: &probe
+              path: /thredds
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: *probe
+            initialDelaySeconds: 60
+            periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               valueFrom:
@@ -66,8 +66,6 @@ spec:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-          #resources:
-#{{ toYaml .Values.tds.resources | indent 12 }}
       volumes:
         - name: tds-content
           emptyDir: {}

@@ -29,15 +29,15 @@ spec:
           # The readiness and liveness probes run the same thing, but the liveness
           # probe just waits a while before kicking in whereas the readiness probe
           # starts straight away
-          #readinessProbe:
-          #  tcpSocket: &probe
-          #    port: 5432
-          #  initialDelaySeconds: 10
-          #  periodSeconds: 10
-          #livenessProbe:
-          #  tcpSocket: *probe
-          #  initialDelaySeconds: 60
-          #  periodSeconds: 10
+          readinessProbe:
+            tcpSocket: &probe
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: *probe
+            initialDelaySeconds: 60
+            periodSeconds: 10
           env:
             - name: DBSUPER_PASSWORD
               valueFrom:
@@ -69,8 +69,6 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/pgsql/data
-          #resources:
-#{{ toYaml .Values.postgres.resources | indent 12 }}
       volumes:
         - name: postgres-data
           emptyDir: {}

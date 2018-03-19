@@ -6,7 +6,6 @@ metadata:
     stack: esgf
     component: index-node
 spec:
-  type: NodePort
   ports:
     - name: http
       port: 8080

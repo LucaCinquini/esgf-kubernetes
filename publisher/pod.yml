@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: esgf-publisher
+  labels:
+    stack: esgf
+    component: publisher
+spec:
+  containers:
+  - name: esgf-publisher
+    image: cedadev/esgf-publisher:latest
+    # Use a command that exits immediately with success, but don't change the entrypoint
+    args: ["tail","-f","/dev/null"]
+    env:
+    - name: ESGF_HOSTNAME
+      valueFrom:
+        configMapKeyRef:
+          name: esgf-config
+          key: esgf-hostname
+    - name: ESGF_DATABASE_HOST
+      value: esgf-postgres
+    - name: ESGF_TDS_USERNAME
+      value: rootAdmin
+    - name: ESGF_DATABASE_PASSWORD_FILE
+      value: /esg/secrets/database-password
+    - name: ESGF_TDS_PASSWORD_FILE
+      value: /esg/secrets/rootadmin-password
+    - name: ESGF_ROOTADMIN_PASSWORD_FILE
+      value: /esg/secrets/rootadmin-password   
+    volumeMounts:
+    - name: publisher-secrets
+      mountPath: "/esg/secrets"
+      readOnly: true
+    - name: trust-bundle
+      mountPath: /esg/certificates/esg-trust-bundle.pem
+      subPath: esg-trust-bundle.pem
+      readOnly: true
+    
+  volumes:
+  - name: publisher-secrets
+    secret:
+      secretName: esgf-publisher-secrets
+  - name: trust-bundle
+    configMap:
+      name: esgf-trust-bundle
+  
+

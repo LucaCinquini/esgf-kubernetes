@@ -9,6 +9,9 @@ spec:
   ports:
     - name: https
       port: 443
+  #externalIPs:
+  #  - 192.168.64.12
+  #type: NodePort
   selector:
     stack: esgf
     component: proxy

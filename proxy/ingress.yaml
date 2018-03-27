@@ -6,17 +6,13 @@ metadata:
     # Enable client certificate authentication
     ingress.kubernetes.io/auth-tls-verify-client: "on"
     # Create the secret containing the trusted ca certificates with `kubectl create secret generic auth-tls-chain --from-file=ca.crt --namespace=default`
-    #  kubectl create secret generic auth-tls-chain --from-file=/Users/cinquini/data/ESGF_CONFIG_MINIKUBE/certificates/slcsca/ca.crt --namespace=default
     ingress.kubernetes.io/auth-tls-secret: "default/auth-tls-chain"
     # Specify the verification depth in the client certificates chain
     ingress.kubernetes.io/auth-tls-verify-depth: "1"
     # Specify an error page to be redirected to on verification errors
-    ingress.kubernetes.io/auth-tls-error-page: "http://esgf.192.168.64.12.xip.io/error-cert.html"
+    ingress.kubernetes.io/auth-tls-error-page: "http://www.mysite.com/error-cert.html"
     # Specify if certificates are be passed to upstream server
-    ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
-    # Enables verification of client certificates.
-    ingress.kubernetes.io/auth-tls-verify-client: "true"
-    
+    ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "false"
     
   name: esgf-ingress
   labels:

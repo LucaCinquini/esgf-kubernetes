@@ -16,19 +16,13 @@ spec:
       labels:
         stack: esgf
         component: postgres
-      #annotations:
-      #  checksum/postgres-secrets: {{ include (print $.Template.BasePath "/postgres/secret.yaml") . | sha256sum }}
     spec:
       containers:
         - name: postgres
-          image: cedadev/esgf-postgres:latest
-          #imagePullPolicy: {{ default "" .Values.postgres.imagePullPolicy | quote }}
+          image: esgfhub/postgres-esgcet:devel
           ports:
             - name: postgres
               containerPort: 5432
-          # The readiness and liveness probes run the same thing, but the liveness
-          # probe just waits a while before kicking in whereas the readiness probe
-          # starts straight away
           readinessProbe:
             tcpSocket: &probe
               port: 5432
@@ -39,16 +33,25 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 10
           env:
-            - name: DBSUPER_PASSWORD
+            - name: POSTGRESQL_DATABASE
+              value: esgcet
+            - name: POSTGRESQL_USER
+              value: dbsuper
+            - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: esgf-postgres-secrets
                   key: database-password
-            - name: ESGCET_PASSWORD
+            - name: ESGF_ESGCET_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: esgf-postgres-secrets
                   key: database-publisher-password
+            - name: ESGF_ROOTADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-secrets
+                  key: rootadmin-password 
             - name: ESGF_ROOTADMIN_EMAIL
               valueFrom:
                 configMapKeyRef:
@@ -61,11 +64,6 @@ spec:
                 configMapKeyRef:
                   name: esgf-config
                   key: root-admin-openid
-            - name: ESGF_ROOTADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: esgf-postgres-secrets
-                  key: rootadmin-password
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/pgsql/data

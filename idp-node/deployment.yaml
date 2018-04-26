@@ -16,13 +16,10 @@ spec:
       labels:
         stack: esgf
         component: idp-node
-      #annotations:
-      #  checksum/postgres-secrets: {{ include (print $.Template.BasePath "/postgres/secret.yaml") . | sha256sum }}
-      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
-    spec:
+    spec: 
       initContainers:
         # Wait for postgres to become available before starting
-        - name: ensure-postgres
+        - name: wait-for-postgres
           image: postgres
           env:
             - name: PGHOST
@@ -51,30 +48,10 @@ spec:
               exit 1
       containers:
         - name: idp-node
-          image: cedadev/esgf-idp-node:latest
-          #imagePullPolicy: {{ default "" .Values.idpNode.imagePullPolicy | quote }}
+          image: esgfhub/idp-node:latest
           ports:
             - name: http
               containerPort: 8080
-          # The readiness and liveness probes run the same thing, but the liveness
-          # probe just waits a while before kicking in whereas the readiness probe
-          # starts straight away
-          #readinessProbe:
-          #  httpGet: &probe
-          #    path: /esgf-idp/
-          #    port: 8080
-              # This endpoint requires HTTPS, so simulate it
-          #    httpHeaders:
-          #      - name: Host
-          #        value: "{{ .Values.hostname }}"
-          #      - name: X-Forwarded-Proto
-          #        value: https
-          #  initialDelaySeconds: 10
-          #  periodSeconds: 10
-          #livenessProbe:
-          #  httpGet: *probe
-          #  initialDelaySeconds: 60
-          #  periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               valueFrom:
@@ -92,8 +69,6 @@ spec:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-          #resources:
-#{{ toYaml .Values.idpNode.resources | indent 12 }}
       volumes:
         - name: trust-bundle
           configMap:

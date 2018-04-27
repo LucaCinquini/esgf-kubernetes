@@ -13,9 +13,10 @@ kubectl create -f postgres/service.yaml
 #kubectl create -f cog/service.yaml
 
 sleep 5
-#kubectl create -f solr/deployment.yaml
-kubectl create -f solr/deployment-classic.yaml
-kubectl create -f solr/service.yaml
+kubectl create -f solr/deployment-master.yaml
+kubectl create -f solr/service-master.yaml
+kubectl create -f solr/deployment-slave.yaml
+kubectl create -f solr/service-slave.yaml
 
 sleep 5
 kubectl create -f idp-node/deployment.yaml

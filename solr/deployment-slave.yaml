@@ -1,0 +1,63 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-solr-slave
+  labels:
+    stack: esgf
+    component: solr
+    solr-role: slave
+spec:
+  selector:
+    matchLabels:
+      stack: esgf
+      component: solr
+      solr-role: slave
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: solr
+        solr-role: slave
+    spec:
+      initContainers:
+        - name: wait-for-solr-master
+          image: esgfhub/solr:latest
+          args:
+            - "wait-for-solr.sh"
+            - "--max-attempts"
+            - "120"
+            - "--solr-url"
+            - "http://esgf-solr-master:8983"
+      containers:
+        - name: solr-slave
+          image: esgfhub/solr:latest
+          ports:
+            - name: solr
+              containerPort: 8983
+          readinessProbe:
+            httpGet: &probe
+              path: /solr/admin/info/system?wt=json
+              port: 8983
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: *probe
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          env:
+            - name: SOLR_HOME
+              value: /esg/solr-home
+            - name: SOLR_HEAP
+              value: 1g
+            - name: ESGF_SOLR_ENABLE_SLAVE
+              value: "1"
+            - name: ESGF_SOLR_MASTER_URL
+              value: "http://esgf-solr-master:8983"
+          volumeMounts:
+            - name: solr-home
+              mountPath: /esg/solr-home
+      volumes:
+        - name: solr-home
+          emptyDir: {}
+ 

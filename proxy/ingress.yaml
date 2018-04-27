@@ -37,7 +37,7 @@ spec:
           servicePort: 8080
       - path: /solr
         backend:
-          serviceName: esgf-solr
+          serviceName: esgf-solr-slave
           servicePort: 8983
       - path: /esg-search
         backend:

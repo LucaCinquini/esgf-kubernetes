@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-solr-master
+  labels:
+    stack: esgf
+    component: solr
+    solr-role: master
+spec:
+  selector:
+    matchLabels:
+      stack: esgf
+      component: solr
+      solr-role: master
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: solr
+        solr-role: master
+    spec:
+      containers:
+        - name: solr-master
+          image: esgfhub/solr:latest
+          ports:
+            - name: solr
+              containerPort: 8983
+          readinessProbe:
+            httpGet: &probe
+              path: /solr/admin/info/system?wt=json
+              port: 8983
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: *probe
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          env:
+            - name: SOLR_HOME
+              value: /esg/solr-home
+            - name: SOLR_HEAP
+              value: 1g
+          volumeMounts:
+            - name: solr-home
+              mountPath: /esg/solr-home
+      volumes:
+        - name: solr-home
+          emptyDir: {}

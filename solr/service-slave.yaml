@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: esgf-solr-slave
+  labels:
+    stack: esgf
+    component: solr
+    solr-role: slave
+spec:
+  ports:
+    - name: solr
+      port: 8983
+  selector:
+    stack: esgf
+    component: solr
+    solr-role: slave

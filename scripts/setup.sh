@@ -1,5 +1,5 @@
 #!/bin/sh
-# script to create site-specific data as Kubernetes config maps and secrets
+# Script that creates site-specific data as Kubernetes config maps and secrets
 
 echo "Using ESGF_HOSTNAME=$ESGF_HOSTNAME"
 

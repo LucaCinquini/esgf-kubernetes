@@ -40,7 +40,7 @@ spec:
             - name: SOLR_HOME
               value: /esg/solr-home
             - name: SOLR_HEAP
-              value: 1g
+              value: 256m
           volumeMounts:
             - name: solr-home
               mountPath: /esg/solr-home

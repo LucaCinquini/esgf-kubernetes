@@ -49,7 +49,7 @@ spec:
             - name: SOLR_HOME
               value: /esg/solr-home
             - name: SOLR_HEAP
-              value: 1g
+              value: 256m
             - name: ESGF_SOLR_ENABLE_SLAVE
               value: "1"
             - name: ESGF_SOLR_MASTER_URL

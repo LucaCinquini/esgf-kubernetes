@@ -28,23 +28,21 @@ spec:
             - "http://esgf-solr-slave:8983"
       containers:
         - name: index-node
-          image: esgfhub/index-node:latest
+          # FIXME: replace with esgfhub/index-node:latest
+          image: esgfhublc/index-node:devel2
           ports:
             - name: http
               containerPort: 8080
-          # The readiness and liveness probes run the same thing, but the liveness
-          # probe just waits a while before kicking in whereas the readiness probe
-          # starts straight away
-          #readinessProbe:
-          #  httpGet: &probe
-          #    path: /esg-search/search
-          #    port: 8080
-          #  initialDelaySeconds: 10
-          #  periodSeconds: 10
-          #livenessProbe:
-          #  httpGet: *probe
-          #  initialDelaySeconds: 60
-          #  periodSeconds: 10
+          readinessProbe:
+            httpGet: &probe
+              path: /esg-search/search
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: *probe
+            initialDelaySeconds: 60
+            periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               valueFrom:

@@ -16,28 +16,19 @@ spec:
       labels:
         stack: esgf
         component: index-node
-      #annotations:
-      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
     spec:
       initContainers:
-        # Make sure Solr is up before starting
-        - name: ensure-solr
-          image: radial/busyboxplus:curl
-          command:
-            # Try every 5 seconds for no longer than 10 mins
-            - sh
-            - -c
-            - |
-              for i in $(seq 120); do
-                sleep 5
-                echo "Attempt $i of 120"
-                if curl -m 1 -fsSL http://esgf-solr:8983/solr/admin/info/system?wt=json; then exit 0; fi
-              done
-              exit 1
+        - name: wait-for-solr-slave
+          image: esgfhub/solr:latest
+          args:
+            - "wait-for-solr.sh"
+            - "--max-attempts"
+            - "120"
+            - "--solr-url"
+            - "http://esgf-solr-slave:8983"
       containers:
         - name: index-node
-          image: cedadev/esgf-index-node:latest
-          #imagePullPolicy: {{ default "" .Values.indexNode.imagePullPolicy | quote }}
+          image: esgfhub/index-node:latest
           ports:
             - name: http
               containerPort: 8080
@@ -64,24 +55,15 @@ spec:
               value: esgf-postgres
             - name: ESGF_SOLR_HOSTNAME
               value: esgf-solr:8983
-            - name: ESGF_SOLR_COLLECTION_NUM_SHARDS
-              value: "1"
-            - name: ESGF_SOLR_COLLECTION_REPLICATION_FACTOR
-              value: "1"
-            - name: ESGF_SOLR_COLLECTION_MAX_SHARDS_PER_NODE
-              value: "1"
+            - name: ESGF_SOLR_QUERY_URL
+              value: "http://esgf-solr-slave:8983"
+            - name: ESGF_SOLR_PUBLISH_URL
+              value: "http://esgf-solr-master:8983"              
           volumeMounts:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-            - name: create-indexes-script
-              mountPath: /tomcat-init.d/02-create-indices.sh
-          #resources:
-#{{ toYaml .Values.indexNode.resources | indent 12 }}
       volumes:
         - name: trust-bundle
           configMap:
             name: esgf-trust-bundle
-        - name: create-indexes-script
-          hostPath:
-            path: /Users/cinquini/eclipse-workspace/esgf-docker-ceda-luca/index-node/scripts/create-indices.sh

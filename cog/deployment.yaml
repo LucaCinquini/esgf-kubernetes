@@ -16,14 +16,10 @@ spec:
       labels:
         stack: esgf
         component: cog
-      #annotations:
-      #  checksum/postgres-secrets: {{ include (print $.Template.BasePath "/postgres/secret.yaml") . | sha256sum }}
-      #  checksum/cog-secrets: {{ include (print $.Template.BasePath "/cog/secret.yaml") . | sha256sum }}
-      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
     spec:
       initContainers:
         # Wait for postgres to become available before starting
-        - name: ensure-postgres
+        - name: wait-for-postgres
           image: postgres
           env:
             - name: PGHOST
@@ -52,33 +48,11 @@ spec:
               exit 1
       containers:
         - name: cog
-          image: cedadev/esgf-cog:latest
-          #imagePullPolicy: {{ default "" .Values.cog.imagePullPolicy | quote }}
+          image: esgfhub/cog:latest
+          #command: ["tail", "-f", "/dev/null"]
           ports:
             - name: http
               containerPort: 8000
-          # The readiness and liveness probes run the same thing, but the liveness
-          # probe just waits a while before kicking in whereas the readiness probe
-          # starts straight away
-          #readinessProbe:
-          #  httpGet: &probe
-          #    path: /
-          #    port: 8000
-              # The ALLOWED_HOSTS setting means that the app will only accept
-              # requests from the correct host
-          #    httpHeaders:
-          #      - name: Host
-          #        value: "{{ .Values.hostname }}"
-          #      - name: X-Forwarded-Host
-          #        value: "{{ .Values.hostname }}"
-          #      - name: X-Forwarded-Proto
-          #        value: https
-          #  initialDelaySeconds: 10
-          #  periodSeconds: 10
-          #livenessProbe:
-          #  httpGet: *probe
-          #  initialDelaySeconds: 60
-          #  periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               valueFrom:
@@ -104,12 +78,23 @@ spec:
                 secretKeyRef:
                   name: esgf-cog-secrets
                   key: "cog-secret-key"
+            - name: ESGF_COG_DATABASE_HOST
+              value: esgf-postgres
+            - name: ESGF_COG_DATABASE_PORT
+              value: "5432"
+            - name: ESGF_COG_DATABASE_NAME
+              value: cogdb
+            - name: ESGF_COG_DATABASE_USER
+              value: dbsuper
+            - name: ESGF_COG_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-secrets
+                  key: "database-password"
           volumeMounts:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-          #resources:
-#{{ toYaml .Values.cog.resources | indent 12 }}
       volumes:
         - name: trust-bundle
           configMap:

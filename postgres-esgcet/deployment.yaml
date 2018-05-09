@@ -1,24 +1,24 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: esgf-postgres
+  name: esgf-postgres-esgcet
   labels:
     stack: esgf
-    component: postgres
+    component: postgres-esgcet
 spec:
   replicas: 1
   selector:
     matchLabels:
       stack: esgf
-      component: postgres
+      component: postgres-esgcet
   template:
     metadata:
       labels:
         stack: esgf
-        component: postgres
+        component: postgres-esgcet
     spec:
       containers:
-        - name: postgres
+        - name: postgres-esgcet
           image: esgfhub/postgres-esgcet:latest
           ports:
             - name: postgres
@@ -40,17 +40,17 @@ spec:
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
+                  name: esgf-postgres-esgcet-secrets
                   key: database-password
             - name: ESGF_ESGCET_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
+                  name: esgf-postgres-esgcet-secrets
                   key: database-publisher-password
             - name: ESGF_ROOTADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
+                  name: esgf-cog-secrets
                   key: rootadmin-password 
             - name: ESGF_ROOTADMIN_EMAIL
               valueFrom:

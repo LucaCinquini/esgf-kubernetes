@@ -1,4 +1,5 @@
-# This pod contains both the TDS and publisher containers since they need  access to the same directory to write/read
+# This pod contains both the TDS and publisher containers 
+# since they need  access to the same directory to write/read
 # the THREDDS catalogs and to parse/serve the data files
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -20,6 +21,7 @@ spec:
         component: tds
     spec: 
       containers:
+      
         - name: tds
           image: esgfhub/tds:latest
           ports:
@@ -53,6 +55,44 @@ spec:
             - name: trust-bundle
               mountPath: /esg/certificates/esg-trust-bundle.pem
               subPath: esg-trust-bundle.pem
+              
+        - name: publisher
+          image: esgfhub/publisher:latest
+          # Use a command that exits immediately with success, but don't change the entrypoint
+          args: ["tail", "-f", "/dev/null"]
+          env:
+          - name: ESGF_HOSTNAME
+            valueFrom:
+              configMapKeyRef:
+                name: esgf-config
+                key: esgf-hostname
+          - name: ESGF_DATABASE_HOST
+            value: esgf-postgres-esgcet
+          - name: ESGF_DATABASE_USER
+            value: esgcet
+          - name: ESGF_DATABASE_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-esgcet-secrets
+                  key: "database-publisher-password"
+          - name: ESGF_TDS_USERNAME
+            value: rootAdmin
+          - name: ESGF_TDS_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: esgf-tds-secrets
+                  key: rootadmin-password
+          volumeMounts:
+            - name: tds-content
+              mountPath: /esg/content/thredds/esgcet
+            - name: tds-data
+              mountPath: /esg/data
+            - name: trust-bundle
+              mountPath: /esg/certificates/esg-trust-bundle.pem
+              subPath: esg-trust-bundle.pem
+            - name: publisher-secrets
+              mountPath: "/esg/secrets"
+              readOnly: true
                       
       volumes:
         - name: tds-content

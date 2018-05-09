@@ -28,8 +28,9 @@ spec:
             - "http://esgf-solr-slave:8983"
       containers:
         - name: index-node
-          # FIXME: replace with esgfhub/index-node:latest
-          image: esgfhublc/index-node:devel2
+          # FIXME: this images fixes the localhost:8983 problem
+          #image: esgfhublc/index-node:devel2
+          image: esgfhub/index-node:devel
           ports:
             - name: http
               containerPort: 8080

@@ -8,9 +8,11 @@ kubectl create -f postgres-esgcet/service.yaml
 #kubectl create -f zookeeper/statefulset.yaml
 #kubectl create -f zookeeper/service.yaml
 
-#sleep 5
-#kubectl create -f cog/deployment.yaml
-#kubectl create -f cog/service.yaml
+sleep 5
+kubectl create -f cog/deployment-postgres.yaml
+kubectl create -f cog/service-postgres.yaml
+kubectl create -f cog/deployment.yaml
+kubectl create -f cog/service.yaml
 
 sleep 5
 kubectl create -f solr/deployment-master.yaml

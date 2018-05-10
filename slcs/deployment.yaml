@@ -5,30 +5,28 @@ metadata:
   labels:
     stack: esgf
     component: slcs
+    slcs-role: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
       stack: esgf
       component: slcs
+      slcs-role: frontend
   template:
     metadata:
       labels:
         stack: esgf
         component: slcs
-      #annotations:
-      #  checksum/postgres-secrets: {{ include (print $.Template.BasePath "/postgres/secret.yaml") . | sha256sum }}
-      #  checksum/slcs-secrets: {{ include (print $.Template.BasePath "/slcs/secret.yaml") . | sha256sum }}
-      #  checksum/slcs-ca: {{ include (print $.Template.BasePath "/slcs/secret-slcs-ca.yaml") . | sha256sum }}
-      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
+        slcs-role: frontend
     spec:
       initContainers:
         # Wait for both postgres databases to become available before starting
-        - name: ensure-slcs-postgres
+        - name: wait-for-postgres-slcs
           image: postgres
           env:
             - name: PGHOST
-              value: esgf-slcs-postgres
+              value: esgf-postgres-slcs
             - name: PGPORT
               value: "5432"
             - name: PGUSER
@@ -37,7 +35,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: esgf-slcs-secrets
-                  key: "slcs-database-password"
+                  key: slcs-database-password
             - name: PGDATABASE
               value: slcs
           command:
@@ -51,11 +49,11 @@ spec:
                 if pg_isready; then exit 0; fi
               done
               exit 1
-        - name: ensure-postgres
+        - name: wait-for-postgres-esgcet
           image: postgres
           env:
             - name: PGHOST
-              value: esgf-postgres
+              value: esgf-postgres-esgcet
             - name: PGPORT
               value: "5432"
             - name: PGUSER
@@ -63,7 +61,7 @@ spec:
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
+                  name: esgf-postgres-esgcet-secrets
                   key: database-password
             - name: PGDATABASE
               value: esgcet
@@ -80,8 +78,7 @@ spec:
               exit 1
       containers:
         - name: slcs
-          image: cedadev/esgf-slcs:latest
-          #imagePullPolicy: {{ default "" .Values.slcs.imagePullPolicy | quote }}
+          image: esgfhub/slcs:latest
           ports:
             - name: http
               containerPort: 8000
@@ -116,19 +113,18 @@ spec:
                 configMapKeyRef:
                   name: esgf-config
                   key: esgf-hostname
-              
             - name: DJANGO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: esgf-slcs-secrets
-                  key: "slcs-secret-key"
+                  key: slcs-secret-key
             # SLCS database
             - name: DJANGO_DATABASE_DEFAULT_ENGINE
               value: django.db.backends.postgresql
             - name: DJANGO_DATABASE_DEFAULT_NAME
               value: slcs
             - name: DJANGO_DATABASE_DEFAULT_HOST
-              value: esgf-slcs-postgres
+              value: esgf-postgres-slcs
             - name: DJANGO_DATABASE_DEFAULT_PORT
               value: "5432"
             - name: DJANGO_DATABASE_DEFAULT_USER
@@ -137,14 +133,14 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: esgf-slcs-secrets
-                  key: "slcs-database-password"
+                  key: slcs-database-password
             # ESGF User database
             - name: DJANGO_DATABASE_USERDB_ENGINE
               value: django.db.backends.postgresql
             - name: DJANGO_DATABASE_USERDB_NAME
               value: esgcet
             - name: DJANGO_DATABASE_USERDB_HOST
-              value: esgf-postgres
+              value: esgf-postgres-esgcet
             - name: DJANGO_DATABASE_USERDB_PORT
               value: "5432"
             - name: DJANGO_DATABASE_USERDB_USER
@@ -152,8 +148,8 @@ spec:
             - name: DJANGO_DATABASE_USERDB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
-                  key: "database-password"
+                  name: esgf-postgres-esgcet-secrets
+                  key: database-password
             # Make the rootAdmin account a superuser
             - name: DJANGO_CREATE_SUPERUSER
               value: "1"
@@ -165,7 +161,6 @@ spec:
                   name: esgf-config
                   key: root-admin-email
             # Other SLCS-specific settings
-            # FIXME
             - name: ESGF_SLCS_URL
               valueFrom: 
                 configMapKeyRef: 
@@ -196,8 +191,6 @@ spec:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-          #resources:
-#{{ toYaml .Values.slcs.resources | indent 12 }}
       volumes:
         - name: slcsca
           secret:

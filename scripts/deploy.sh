@@ -36,12 +36,12 @@ sleep 5
 kubectl create -f orp/deployment.yaml
 kubectl create -f orp/service.yaml
 
-#sleep 5
-#kubectl create -f auth/deployment-postgres.yaml
-#kubectl create -f auth/service-postgres.yaml
-#sleep 5
-#kubectl create -f auth/deployment.yaml
-#kubectl create -f auth/service.yaml
+sleep 5
+kubectl create -f auth/deployment-postgres.yaml
+kubectl create -f auth/service-postgres.yaml
+sleep 5
+kubectl create -f auth/deployment.yaml
+kubectl create -f auth/service.yaml
 
 sleep 5
 kubectl create -f slcs/deployment-postgres.yaml

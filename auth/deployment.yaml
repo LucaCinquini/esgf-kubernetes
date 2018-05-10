@@ -5,28 +5,28 @@ metadata:
   labels:
     stack: esgf
     component: auth
+    auth-role: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
       stack: esgf
       component: auth
+      auth-role: frontend
   template:
     metadata:
       labels:
         stack: esgf
         component: auth
-      #annotations:
-      #  checksum/auth-secrets: {{ include (print $.Template.BasePath "/auth/secret.yaml") . | sha256sum }}
-      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
+        auth-role: frontend
     spec:
       initContainers:
         # Wait for postgres to become available before starting
-        - name: ensure-postgres
+        - name: wait-for-postgres-auth
           image: postgres
           env:
             - name: PGHOST
-              value: esgf-auth-postgres
+              value: esgf-postgres-auth
             - name: PGPORT
               value: "5432"
             - name: PGUSER
@@ -35,7 +35,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: esgf-auth-secrets
-                  key: "auth-database-password"
+                  key: auth-database-password
             - name: PGDATABASE
               value: auth
           command:
@@ -51,33 +51,10 @@ spec:
               exit 1
       containers:
         - name: auth
-          image: cedadev/esgf-auth:latest
-          #imagePullPolicy: {{ default "" .Values.auth.imagePullPolicy | quote }}
+          image: esgfhub/auth:latest
           ports:
             - name: http
               containerPort: 8000
-          # The readiness and liveness probes run the same thing, but the liveness
-          # probe just waits a while before kicking in whereas the readiness probe
-          # starts straight away
-          #readinessProbe:
-          #  httpGet: &probe
-          #    path: /esgf-auth/home/
-          #    port: 8000
-              # The ALLOWED_HOSTS setting means that the app will only accept
-              # requests from the correct host
-          #    httpHeaders:
-          #      - name: Host
-          #        value: "{{ .Values.hostname }}"
-          #      - name: X-Forwarded-Host
-          #        value: "{{ .Values.hostname }}"
-          #      - name: X-Forwarded-Proto
-          #        value: https
-          #  initialDelaySeconds: 10
-          #  periodSeconds: 10
-          #livenessProbe:
-          #  httpGet: *probe
-          #  initialDelaySeconds: 60
-          #  periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               valueFrom:
@@ -85,7 +62,7 @@ spec:
                   name: esgf-config
                   key: esgf-hostname
             - name: ESGF_DATABASE_HOST
-              value: esgf-postgres
+              value: esgf-postgres-esgcet
             # ESGF-Auth settings
             - name: SCRIPT_NAME
               value: /esgf-auth
@@ -93,19 +70,19 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: esgf-auth-secrets
-                  key: "auth-secret-key"
+                  key: auth-secret-key
             - name: ESGF_COOKIE_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: esgf-auth-secrets
-                  key: "shared-cookie-secret-key"
+                  key: shared-cookie-secret-key
             # Database settings
             - name: DJANGO_DATABASE_DEFAULT_ENGINE
               value: django.db.backends.postgresql
             - name: DJANGO_DATABASE_DEFAULT_NAME
               value: auth
             - name: DJANGO_DATABASE_DEFAULT_HOST
-              value: esgf-auth-postgres
+              value: esgf-postgres-auth
             - name: DJANGO_DATABASE_DEFAULT_PORT
               value: "5432"
             - name: DJANGO_DATABASE_DEFAULT_USER
@@ -114,14 +91,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: esgf-auth-secrets
-                  key: "auth-database-password"
+                  key: auth-database-password
           volumeMounts:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-          #resources:
-#{{ toYaml .Values.auth.resources | indent 12 }}
-      volumes:
+      volumes: 
         - name: trust-bundle
           configMap:
             name: esgf-trust-bundle

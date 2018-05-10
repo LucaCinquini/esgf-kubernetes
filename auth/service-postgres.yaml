@@ -1,14 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: esgf-auth-postgres
+  name: esgf-postgres-auth
   labels:
     stack: esgf
-    component: auth-postgres
+    component: auth
+    auth-role: backend
 spec:
   ports:
     - name: postgres
       port: 5432
   selector:
     stack: esgf
-    component: auth-postgres
+    component: auth
+    auth-role: backend

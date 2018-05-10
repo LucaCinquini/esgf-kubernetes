@@ -5,6 +5,7 @@ metadata:
   labels:
     stack: esgf
     component: auth
+    auth-role: frontend
 spec:
   ports:
     - name: http
@@ -12,3 +13,4 @@ spec:
   selector:
     stack: esgf
     component: auth
+    auth-role: frontend

@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: esgf-postgres-cog
+  labels:
+    stack: esgf
+    component: cog
+    cog-role: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      stack: esgf
+      component: cog
+      cog-role: backend
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: cog
+        cog-role: backend
+    spec:
+      containers:
+        - name: postgres-cog
+          image: esgfhub/postgres:latest
+          ports:
+            - name: postgres
+              containerPort: 5432
+          readinessProbe:
+            tcpSocket: &probe
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: *probe
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          env:
+            - name: POSTGRESQL_DATABASE
+              value: cogdb
+            - name: POSTGRESQL_USER
+              value: dbsuper
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-esgcet-secrets
+                  key: database-password
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/pgsql/data
+          resources:
+      volumes:
+        - name: postgres-data
+          emptyDir: {}

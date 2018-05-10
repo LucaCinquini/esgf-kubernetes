@@ -5,6 +5,7 @@ metadata:
   labels:
     stack: esgf
     component: cog
+    cog-role: frontend
 spec:
   replicas: 1
   selector:
@@ -23,7 +24,7 @@ spec:
           image: postgres
           env:
             - name: PGHOST
-              value: esgf-postgres
+              value: esgf-postgres-esgcet
             - name: PGPORT
               value: "5432"
             - name: PGUSER
@@ -31,10 +32,37 @@ spec:
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
+                  name: esgf-postgres-esgcet-secrets
                   key: database-password
             - name: PGDATABASE
               value: esgcet
+          command:
+            # Try every 5 seconds for no longer than 10 mins
+            - bash
+            - -c
+            - |
+              for i in $(seq 120); do
+                sleep 5
+                echo "Attempt $i of 120"
+                if pg_isready; then exit 0; fi
+              done
+              exit 1
+        - name: wait-for-postgres-cog
+          image: postgres
+          env:
+            - name: PGHOST
+              value: esgf-postgres-cog
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              value: dbsuper
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esgf-postgres-esgcet-secrets
+                  key: database-password
+            - name: PGDATABASE
+              value: cogdb
           command:
             # Try every 5 seconds for no longer than 10 mins
             - bash
@@ -60,26 +88,26 @@ spec:
                   name: esgf-config
                   key: esgf-hostname
             - name: ESGF_DATABASE_HOST
-              value: esgf-postgres
+              value: esgf-postgres-esgcet
             - name: ESGF_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
-                  key: "database-password"
+                  name: esgf-postgres-esgcet-secrets
+                  key: database-password
             - name: ESGF_ROOTADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: esgf-cog-secrets
-                  key: "rootadmin-password"
+                  key: rootadmin-password
             - name: ESGF_COG_TIME_ZONE
               value: "America/Denver"
             - name: ESGF_COG_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: esgf-cog-secrets
-                  key: "cog-secret-key"
+                  key: cog-secret-key
             - name: ESGF_COG_DATABASE_HOST
-              value: esgf-postgres
+              value: esgf-postgres-cog
             - name: ESGF_COG_DATABASE_PORT
               value: "5432"
             - name: ESGF_COG_DATABASE_NAME
@@ -89,8 +117,8 @@ spec:
             - name: ESGF_COG_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: esgf-postgres-secrets
-                  key: "database-password"
+                  name: esgf-postgres-esgcet-secrets
+                  key: database-password
           volumeMounts:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle

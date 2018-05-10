@@ -1,14 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: esgf-slcs-postgres
+  name: esgf-postgres-slcs
   labels:
     stack: esgf
-    component: slcs-postgres
+    component: slcs
+    slcs-role: backend
 spec:
   ports:
     - name: postgres
       port: 5432
   selector:
     stack: esgf
-    component: slcs-postgres
+    component: slcs
+    slcs-role: backend

@@ -1,51 +1,53 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: esgf-slcs-postgres
+  name: esgf-postgres-slcs
   labels:
     stack: esgf
-    component: slcs-postgres
+    component: slcs
+    slcs-role: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
       stack: esgf
-      component: slcs-postgres
+      component: slcs
+      slcs-role: backend
   template:
     metadata:
       labels:
         stack: esgf
-        component: slcs-postgres
-      #annotations:
-      #  checksum/slcs-secrets: {{ include (print $.Template.BasePath "/slcs/secret.yaml") . | sha256sum }}
-    spec:
+        component: slcs
+        slcs-role: backend
+    spec: 
       containers:
-        - name: slcs-postgres
-          image: postgres:10
-          #imagePullPolicy: {{ default "" .Values.slcs.postgres.imagePullPolicy | quote }}
+        - name: postgres-slcs
+          image: esgfhub/postgres:latest
           ports:
             - name: postgres
               containerPort: 5432
-          livenessProbe:
-            tcpSocket:
+          readinessProbe:
+            tcpSocket: &probe
               port: 5432
             initialDelaySeconds: 10
             periodSeconds: 10
+          livenessProbe:
+            tcpSocket: *probe
+            initialDelaySeconds: 60
+            periodSeconds: 10
           env:
-            - name: POSTGRES_USER
-              value: slcsuser
-            - name: POSTGRES_DB
+            - name: POSTGRESQL_DATABASE
               value: slcs
-            - name: POSTGRES_INITDB_ARGS
-              value: "--encoding=UTF-8"
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRESQL_USER
+              value: slcsuser
+            - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: esgf-slcs-secrets
-                  key: "slcs-database-password"
+                  key: slcs-database-password
           volumeMounts:
             - name: postgres-data
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/pgsql/data
       volumes:
         - name: postgres-data
           emptyDir: {}

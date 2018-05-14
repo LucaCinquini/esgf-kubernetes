@@ -30,20 +30,20 @@ spec:
         - name: index-node
           # FIXME: this images fixes the localhost:8983 problem
           #image: esgfhublc/index-node:devel2
-          image: esgfhub/index-node:devel
+          image: esgfhub/index-node:latest
           ports:
             - name: http
               containerPort: 8080
-          readinessProbe:
-            httpGet: &probe
-              path: /esg-search/search
-              port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          livenessProbe:
-            httpGet: *probe
-            initialDelaySeconds: 60
-            periodSeconds: 10
+          #readinessProbe:
+          #  httpGet: &probe
+          #    path: /esg-search/search
+          #    port: 8080
+          #  initialDelaySeconds: 10
+          #  periodSeconds: 10
+          #livenessProbe:
+          #  httpGet: *probe
+          #  initialDelaySeconds: 60
+          #  periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               valueFrom:

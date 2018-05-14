@@ -21,10 +21,10 @@ spec:
   tls:
   # FIXME: minikube ip
   - hosts: 
-    - my-node.esgf.org
+    - esgf.192.168.64.66.xip.io
     secretName: esgf-hostcert
   rules:
-  - host: my-node.esgf.org
+  - host: esgf.192.168.64.66.xip.io
     http:
       paths:
       - path: /thredds

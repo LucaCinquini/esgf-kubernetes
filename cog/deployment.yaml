@@ -12,11 +12,13 @@ spec:
     matchLabels:
       stack: esgf
       component: cog
+      cog-role: frontend
   template:
     metadata:
       labels:
         stack: esgf
         component: cog
+        cog-role: frontend
     spec:
       initContainers:
         # Wait for postgres to become available before starting

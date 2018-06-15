@@ -16,16 +16,20 @@ spec:
       labels:
         stack: esgf
         component: index-node
-    spec:
-      initContainers:
+    spec: 
+      initContainers: 
         - name: wait-for-solr-slave
-          image: esgfhub/solr:latest
-          args:
-            - "wait-for-solr.sh"
-            - "--max-attempts"
-            - "120"
-            - "--solr-url"
-            - "http://esgf-solr-slave:8983"
+          image: radial/busyboxplus:curl
+          command:
+            - sh
+            - -c
+            - |
+              for i in $(seq 120); do
+                sleep 5
+                echo "Attempt $i of 120"
+                if curl -k -m 1 -fsSL http://esgf-solr-slave:8983/solr; then exit 0; fi
+              done
+              exit 1
       containers:
         - name: index-node
           # FIXME: this images fixes the localhost:8983 problem

@@ -20,7 +20,7 @@ spec:
         component: solr
         solr-role: slave
     spec:
-      initContainers:
+      initContainers: 
         - name: wait-for-solr-master
           image: radial/busyboxplus:curl
           command:

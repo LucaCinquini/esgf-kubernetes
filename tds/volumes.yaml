@@ -1,0 +1,28 @@
+# Persistent volumes shared across all containers in the same pod
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tds-content
+  labels:
+    stack: esgf
+    component: tds
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tds-data
+  labels:
+    stack: esgf
+    component: tds
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

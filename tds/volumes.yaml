@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: tds-content
+  name: esgf-tds-content
   labels:
     stack: esgf
     component: tds
@@ -16,7 +16,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: tds-data
+  name: esgf-tds-data
   labels:
     stack: esgf
     component: tds

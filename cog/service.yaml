@@ -13,3 +13,4 @@ spec:
   selector:
     stack: esgf
     component: cog
+    cog-role: frontend

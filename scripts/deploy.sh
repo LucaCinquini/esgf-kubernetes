@@ -29,6 +29,7 @@ kubectl create -f index-node/deployment.yaml
 kubectl create -f index-node/service.yaml
 
 sleep 5
+kubectl create -f tds/volumes.yaml
 kubectl create -f tds/deployment.yaml
 kubectl create -f tds/service.yaml
 
@@ -51,8 +52,10 @@ kubectl create -f slcs/deployment.yaml
 kubectl create -f slcs/service.yaml
 
 sleep 5
+
 # minikube: expose stack via Ingress
 # kubectl create -f proxy/ingress.yaml
+
 # GKE: expose stack via Service of type LoadBalancer tied to a static IP address
 # kubectl create -f proxy/deployment.html
 # kubectl create -f proxy/service.html

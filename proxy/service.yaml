@@ -6,12 +6,13 @@ metadata:
     stack: esgf
     component: proxy
 spec:
+  type: LoadBalancer
+  loadBalancerIP: "35.226.253.129"
   ports:
-    - name: https
-      port: 443
-  #externalIPs:
-  #  - 192.168.64.12
-  #type: NodePort
+  - name: https
+    port: 443
+  - name: http
+    port: 80
   selector:
     stack: esgf
     component: proxy

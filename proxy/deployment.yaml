@@ -16,34 +16,16 @@ spec:
       labels:
         stack: esgf
         component: proxy
-      #annotations:
-      #  checksum/hostcert: {{ include (print $.Template.BasePath "/certificates/hostcert-secret.yaml") . | sha256sum }}
-      #  checksum/trust-bundle: {{ include (print $.Template.BasePath "/certificates/trust-bundle-configmap.yaml") . | sha256sum }}
     spec:
       containers:
         - name: proxy
-          image: cedadev/esgf-proxy:latest
+          image: esgfhub/proxy:latest
           #imagePullPolicy: {{ default "" .Values.proxy.imagePullPolicy | quote }}
           ports:
             - name: http
               containerPort: 80
             - name: https
               containerPort: 443
-#          livenessProbe:
-#            httpGet:
-#              path: /esgf-slcs
-#              port: 8000
-              # The ALLOWED_HOSTS setting means that the app will only accept
-              # requests from the correct host
-#              httpHeaders:
-#                - name: Host
-#                  value: "{{ .Values.hostname }}"
-#                - name: X-Forwarded-Host
-#                  value: "{{ .Values.hostname }}"
-#                - name: X-Forwarded-Proto
-#                  value: https
-#            initialDelaySeconds: 10
-#            periodSeconds: 10
           env:
             - name: ESGF_HOSTNAME
               valueFrom:
@@ -51,7 +33,7 @@ spec:
                   name: esgf-config
                   key: esgf-hostname
             - name: ESGF_SOLR_UPSTREAM
-              value: "http://esgf-solr.default.svc.cluster.local:8983"
+              value: "http://esgf-solr-slave.default.svc.cluster.local:8983"
             - name: ESGF_INDEX_NODE_UPSTREAM
               value: "http://esgf-index-node.default.svc.cluster.local:8080"
             - name: ESGF_TDS_UPSTREAM
@@ -76,8 +58,6 @@ spec:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
-          #resources:
-#{{ toYaml .Values.proxy.resources | indent 12 }}
       volumes:
         - name: hostcert
           secret:

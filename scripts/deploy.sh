@@ -53,5 +53,5 @@ sleep 5
 # kubectl create -f proxy/ingress.yaml
 
 # GKE: expose stack via Service of type LoadBalancer tied to a static IP address
-# kubectl create -f proxy/deployment.html
-# kubectl create -f proxy/service.html
+# kubectl create -f proxy/deployment.yaml
+# kubectl create -f proxy/service.yaml

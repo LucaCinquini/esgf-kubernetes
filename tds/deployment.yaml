@@ -20,8 +20,24 @@ spec:
         stack: esgf
         component: tds
     spec: 
+    
+      initContainers:
+    
+        - name: change-volume-ownership
+          image: alpine
+          command:
+            - chown
+            - -R  
+            - 1001:1001
+            - /esg/data
+          volumeMounts:
+            - name: tds-content
+              mountPath: /esg/content/thredds/esgcet
+            - name: tds-data
+              mountPath: /esg/data
+ 
       containers:
-      
+     
         - name: tds
           image: esgfhub/tds:latest
           ports:
@@ -96,13 +112,13 @@ spec:
                       
       volumes:
         - name: tds-content
-          emptyDir: {}
-          #persistentVolumeClaim:
-          #  claimName: esgf-tds-content
+          #emptyDir: {}
+          persistentVolumeClaim:
+            claimName: esgf-tds-content
         - name: tds-data
-          emptyDir: {}
-          #persistentVolumeClaim:
-          #  claimName: esgf-tds-data
+          #emptyDir: {}
+          persistentVolumeClaim:
+            claimName: esgf-tds-data
         - name: trust-bundle
           configMap:
             name: esgf-trust-bundle

@@ -48,7 +48,7 @@ spec:
               exit 1
       containers:
         - name: idp-node
-          image: esgfhub/idp-node:latest
+          image: esgfhub/idp:latest
           ports:
             - name: http
               containerPort: 8080

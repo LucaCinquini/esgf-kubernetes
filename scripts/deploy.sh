@@ -25,7 +25,7 @@ kubectl create -f index-node/deployment.yaml
 kubectl create -f index-node/service.yaml
 
 sleep 5
-kubectl create -f tds/volumes.yaml
+#kubectl create -f tds/volumes.yaml
 kubectl create -f tds/deployment.yaml
 kubectl create -f tds/service.yaml
 

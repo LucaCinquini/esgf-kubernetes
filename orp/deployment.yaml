@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: orp
-          image: esgfhub/orp:latest
+          image: esgfhublc/orp:latest
           ports:
             - name: http
               containerPort: 8080

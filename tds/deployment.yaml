@@ -20,26 +20,11 @@ spec:
         stack: esgf
         component: tds
     spec: 
-    
-      initContainers:
-    
-        - name: change-volume-ownership
-          image: alpine
-          command:
-            - chown
-            - -R  
-            - 1001:1001
-            - /esg/data
-          volumeMounts:
-            - name: tds-content
-              mountPath: /esg/content/thredds/esgcet
-            - name: tds-data
-              mountPath: /esg/data
- 
       containers:
-     
+      
         - name: tds
-          image: esgfhub/tds:latest
+          image: esgfhublc/tds:latest
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8080

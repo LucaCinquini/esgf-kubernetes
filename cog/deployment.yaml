@@ -78,8 +78,8 @@ spec:
               exit 1
       containers:
         - name: cog
-          image: esgfhub/cog:latest
-          #command: ["tail", "-f", "/dev/null"]
+          image: esgfhublc/cog:latest
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8000

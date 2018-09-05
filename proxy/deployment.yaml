@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: proxy
-          image: esgfhub/proxy:latest
+          image: esgfhublc/proxy:latest
           #imagePullPolicy: {{ default "" .Values.proxy.imagePullPolicy | quote }}
           ports:
             - name: http

@@ -22,7 +22,8 @@ spec:
     spec:
       containers:
         - name: solr-master
-          image: esgfhub/solr:latest
+          image: esgfhublc/solr:latest
+          imagePullPolicy: Always
           ports:
             - name: solr
               containerPort: 8983

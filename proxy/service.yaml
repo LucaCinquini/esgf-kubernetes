@@ -6,7 +6,8 @@ metadata:
     stack: esgf
     component: proxy
 spec:
-  type: LoadBalancer
+  type: NodePort
+  #type: LoadBalancer
   #loadBalancerIP: "35.226.253.129"
   ports:
   - name: https

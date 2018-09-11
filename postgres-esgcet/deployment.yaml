@@ -65,8 +65,10 @@ spec:
                   name: esgf-config
                   key: root-admin-openid
           volumeMounts:
-            - name: postgres-data
+            - name: postgres-esgcet-data
               mountPath: /var/lib/pgsql/data
       volumes:
-        - name: postgres-data
-          emptyDir: {}
+        - name: postgres-esgcet-data
+          persistentVolumeClaim:
+            claimName: postgres-esgcet-data
+

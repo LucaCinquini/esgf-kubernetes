@@ -125,7 +125,12 @@ spec:
             - mountPath: /esg/certificates/esg-trust-bundle.pem
               name: trust-bundle
               subPath: esg-trust-bundle.pem
+            #- mountPath: /usr/local/cog/cog_config
+            #  name: cog-config-data
       volumes:
         - name: trust-bundle
           configMap:
             name: esgf-trust-bundle
+        - name: cog-config-data
+          persistentVolumeClaim:
+            claimName: cog-config-data

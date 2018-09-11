@@ -46,9 +46,10 @@ spec:
                   name: esgf-postgres-esgcet-secrets
                   key: database-password
           volumeMounts:
-            - name: postgres-data
+            - name: postgres-cog-data
               mountPath: /var/lib/pgsql/data
           resources:
       volumes:
-        - name: postgres-data
-          emptyDir: {}
+        - name: postgres-cog-data
+          persistentVolumeClaim:
+            claimName: postgres-cog-data

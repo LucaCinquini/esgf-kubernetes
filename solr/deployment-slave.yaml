@@ -64,5 +64,6 @@ spec:
               mountPath: /esg/solr-home
       volumes:
         - name: solr-home
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: solr-home-slave
  

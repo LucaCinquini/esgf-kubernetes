@@ -97,13 +97,11 @@ spec:
                       
       volumes:
         - name: tds-content
-          emptyDir: {}
-          #persistentVolumeClaim:
-          #  claimName: esgf-tds-content
+          persistentVolumeClaim:
+            claimName: esgf-tds-content
         - name: tds-data
-          emptyDir: {}
-          #persistentVolumeClaim:
-          #  claimName: esgf-tds-data
+          persistentVolumeClaim:
+            claimName: esgf-tds-data
         - name: trust-bundle
           configMap:
             name: esgf-trust-bundle

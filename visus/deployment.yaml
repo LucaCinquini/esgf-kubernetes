@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esgf-visus-config-js
+data:
+  config.js: |
+    // Settings for your webviewer installation
+
+    // Server module URL
+    DEFAULT_SERVER='http://esgf.192.168.99.105.xip.io/esgf-visus/mod_visus?';
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "esgf-visus"
+  labels:
+    stack: esgf
+    component: visus
+spec:
+  replicas: 1
+  # Select pods on release and component only, rather than all labels
+  # This means that the selector will match all pods from all versions of the chart when upgrading
+  selector:
+    matchLabels:
+      stack: esgf
+      component: visus
+  template:
+    metadata:
+      labels:
+        stack: esgf
+        component: visus
+    spec:
+      # Setting fsGroup for the pod allows some provisioners to chown mounted volumes to the given group
+      #   The publish group is 1001 inside the container
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: visus
+          image: visus/ondemand:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+          # The readiness and liveness probes run the same thing, but the liveness
+          # probe just waits a while before kicking in whereas the readiness probe
+          # starts straight away
+          readinessProbe: &probe
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            <<: *probe
+            initialDelaySeconds: 600
+          volumeMounts:
+            - mountPath: /data/xml
+              name: tds-data
+            - mountPath: /home/visus/webviewer/config.js
+              subPath: config.js
+              name: config-js
+      volumes:
+        - name: tds-data
+          persistentVolumeClaim:
+            claimName: esgf-tds-data
+        - name: config-js
+          configMap:
+            name: esgf-visus-config-js

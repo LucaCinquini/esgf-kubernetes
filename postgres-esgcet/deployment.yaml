@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: postgres-esgcet
-          image: esgfhub/postgres-esgcet:latest
+          image: esgfhub/postgres:latest
           ports:
             - name: postgres
               containerPort: 5432

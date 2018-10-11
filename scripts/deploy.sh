@@ -50,7 +50,7 @@ kubectl create -f slcs/service.yaml
 sleep 5
 
 # minikube: expose stack via Ingress
-# kubectl create -f proxy/ingress.yaml
+kubectl create -f proxy/ingress.yaml
 
 # GKE: expose stack via Service of type LoadBalancer tied to a static IP address
 # kubectl create -f proxy/deployment.yaml
